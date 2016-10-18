@@ -1,0 +1,31 @@
+*.annot
+*.cmo
+*.cma
+*.cmi
+*.a
+*.o
+*.cmx
+*.cmxs
+*.cmxa
+*.s
+*.output
+
+# Latex Directories
+*/_minted-master/*
+*.aux
+*.log
+*.synctex.gz
+*.toc
+
+# ocamlbuild working directory
+Compiler/_build/*
+_build/*
+includes/*
+
+# ocamlbuild targets
+*.byte
+*.native
+
+# oasis generated files
+setup.data
+setup.log
