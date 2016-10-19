@@ -65,6 +65,7 @@ rule token = parse
 | "order"   { ORDER }
 | "portfolio"   { PORTFOLIO }
 | "struct"  { STRUCT }
+| "function"    { FUNCTION }
 
 | int as lxm        { INT_LITERAL(int_of_string lxm) }
 | float as lxm      { FLOAT_LITERAL(float_of_string lxm) }
