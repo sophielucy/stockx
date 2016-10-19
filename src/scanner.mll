@@ -8,13 +8,14 @@ let alpha = ['a'-'z' 'A'-'Z']
 let ascii = ([' '-'!' '#'-'[' ']'-'~'])
 let digit = ['0'-'9']
 let int = digit+
-let float = (digit+) ['.'] digit+
+let float = (digit*) ['.'] digit+
 let char = ''' ( ascii | digit ) '''
 let id = alpha (alpha | digit | '_')*
 
 rule token = parse
   whitespace    { token lexbuf } (* white space *)
 | "/*"      { comment lexbuf }
+| "//"      { line_comment lexbuf }
 
 | '('       { LPAREN }
 | ')'       { RPAREN }
@@ -60,6 +61,10 @@ rule token = parse
 | "null"    { NULL }
 | "true"    { TRUE }
 | "false"   { FALSE }
+| "stock"   { STOCK }
+| "order"   { ORDER }
+| "portfolio"   { PORTFOLIO }
+| "struct"  { STRUCT }
 
 | int as lxm        { INT_LITERAL(int_of_string lxm) }
 | float as lxm      { FLOAT_LITERAL(float_of_string lxm) }
@@ -71,3 +76,7 @@ rule token = parse
 and comment = parse
     "*/"    { token lexbuf }
 |   _       { comment lexbuf }
+
+and line_comment = parse
+    ['\n' '\r'] { token lexbuf }
+|   _           { line_comment lexbuf }
