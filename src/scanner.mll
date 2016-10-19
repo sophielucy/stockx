@@ -66,6 +66,7 @@ rule token = parse
 | char as lxm       { CHAR_LITERAL( String.get lxm 1 ) }
 | id as lxm         { ID(lxm) }
 | eof               { EOF }
+| _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
 and comment = parse
     "*/"    { token lexbuf }
