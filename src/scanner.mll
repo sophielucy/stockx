@@ -10,6 +10,7 @@ let digit = ['0'-'9']
 let int = digit+
 let float = (digit*) ['.'] digit+
 let char = ''' ( ascii | digit ) '''
+let string = '"' (ascii)* '"'
 let id = alpha (alpha | digit | '_')*
 
 rule token = parse
@@ -23,6 +24,7 @@ rule token = parse
 | '}'       { RBRACE }
 | ';'       { SEMI }
 | ','       { COMMA }
+| "function"    { FUNC }
 
 (* operators *)
 | '+'       { PLUS }
@@ -30,6 +32,11 @@ rule token = parse
 | '*'       { TIMES }
 | '/'       { DIVIDE }
 | '%'       { MODULO }
+| "+="      { PLUSEQ }
+| "-="      { MINUSEQ }
+| "*="      { TIMESEQ }
+| "/="      { DIVIDEEQ }
+| "%="      { MODULOEQ }
 | '='       { ASSIGN }
 | "=="      { EQ }
 | "!="      { NEQ }
@@ -56,7 +63,6 @@ rule token = parse
 | "int"     { INT }
 | "float"   { FLOAT }
 | "bool"    { BOOL }
-| "char"    { CHAR }
 | "void"    { VOID }
 | "null"    { NULL }
 | "true"    { TRUE }
@@ -65,12 +71,13 @@ rule token = parse
 | "order"   { ORDER }
 | "portfolio"   { PORTFOLIO }
 | "struct"  { STRUCT }
-| "function"    { FUNCTION }
+| "array"   { ARRAY }
+| "string"  { STRING }
 
 | int as lxm        { INT_LITERAL(int_of_string lxm) }
 | float as lxm      { FLOAT_LITERAL(float_of_string lxm) }
-| char as lxm       { CHAR_LITERAL( String.get lxm 1 ) }
 | id as lxm         { ID(lxm) }
+| string as lxm     { STRING_LITERAL(lxm) }
 | eof               { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
 
