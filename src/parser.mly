@@ -1,16 +1,17 @@
 %{  open Ast  %}
 
-%token INT FLOAT BOOL CHAR VOID NULL TRUE FALSE
+%token INT FLOAT BOOL VOID NULL TRUE FALSE
 %token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA DOT
 %token AND NOT OR PLUS MINUS TIMES DIVIDE ASSIGN MODULO
+%token PLUSEQ MINUSEQ TIMESEQ DIVIDEEQ MODULOEQ
 %token EQ NEQ LT LEQ GT GEQ BAR
 %token IF ELSE FOR WHILE RETURN
 %token STOCK ORDER PORTFOLIO
 %token FUNCTION
 %token <int> INT_LITERAL
 %token <float> FLOAT_LITERAL
-%token <char> CHAR_LITERAL
 %token <string> ID
+%token <string> STRING
 %token EOF
 
 %nonassoc NOELSE
@@ -20,8 +21,8 @@
 %left AND
 %left EQ NEQ
 %left LT GT LEQ GEQ
-%left PLUS MINUS
-%left TIMES DIVIDE
+%left PLUS MINUS PLUSEQ MINUSEQ
+%left TIMES DIVIDE MODULO TIMESEQ DIVIDEEQ MODULOEQ
 %right NOT NEG
 
 %start program
@@ -38,7 +39,7 @@ decls:
 |   decls statement { fst $1, ($2 :: snd $1) }
 
 fdecl:
-    FUNCTION ID LPAREN formals_opt
+    FUNCTION ID LPAREN formals_opt RPAREN RETURN LPAREN typ RPAREN LBRACE stmnt_list RBRACE
 
 formals_opt:
     /* nothing */   { [] }
@@ -51,7 +52,15 @@ formal_list:
 typ:
     INT     { Int }
 |   FLOAT   { Float }
-|   CHAR    { Char }
 |   BOOL    { Bool }
 |   VOID    { Void }
+|   STOCK   { Stock }
+|   ORDER   { Order }
+|   PORTFOLIO   { Portfolio }
+|   STRING  { String }
+|   ARRAY   { Array }
+|   STRUCT  { Struct }
+|   FUNCTION    { Function }
 
+stmnt_list:
+    
