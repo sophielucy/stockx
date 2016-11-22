@@ -1,6 +1,9 @@
 (* Ocamllex scanner for StockX *)
 
-{ open Parser }
+{
+    open Parser
+    let lineno = ref 1
+}
 
 (* need to exclude newline for single line comments *)
 let whitespace = [' ' '\t' '\r' '\n']
@@ -15,16 +18,16 @@ let id = alpha (alpha | digit | '_')*
 
 rule token = parse
   whitespace    { token lexbuf } (* white space *)
-| "/*"      { comment lexbuf }
-| "//"      { line_comment lexbuf }
+| "/*"          { comment lexbuf }
+| "//"          { line_comment lexbuf }
 
-| '('       { LPAREN }
-| ')'       { RPAREN }
-| '{'       { LBRACE }
-| '}'       { RBRACE }
-| ';'       { SEMI }
-| ','       { COMMA }
-| "function"    { FUNC }
+| '('           { LPAREN }
+| ')'           { RPAREN }
+| '{'           { LBRACE }
+| '}'           { RBRACE }
+| ';'           { SEMI }
+| ','           { COMMA }
+| "function"    { FUNCTION }
 
 (* operators *)
 | '+'       { PLUS }
@@ -79,11 +82,11 @@ rule token = parse
 | id as lxm         { ID(lxm) }
 | string as lxm     { STRING_LITERAL(lxm) }
 | eof               { EOF }
-| _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
+| _ as illegal  { raise (Exceptions.IllegalCharacter(illegal, !lineno)) }
 
 and comment = parse
-    "*/"    { token lexbuf }
-|   _       { comment lexbuf }
+    "*/"        { token lexbuf }
+|   _           { comment lexbuf }
 
 and line_comment = parse
     ['\n' '\r'] { token lexbuf }

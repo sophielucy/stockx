@@ -1,17 +1,22 @@
-%{  open Ast  %}
+/* Ocamlyacc parser for StockX */
 
-%token INT FLOAT BOOL VOID NULL TRUE FALSE
+%{
+open Ast
+%}
+
+%token INT FLOAT BOOL STRING VOID NULL TRUE FALSE
 %token SEMI LPAREN RPAREN LBRACE RBRACE LBRACKET RBRACKET COMMA DOT
 %token AND NOT OR PLUS MINUS TIMES DIVIDE ASSIGN MODULO
 %token PLUSEQ MINUSEQ TIMESEQ DIVIDEEQ MODULOEQ
 %token EQ NEQ LT LEQ GT GEQ BAR
 %token IF ELSE FOR WHILE RETURN
 %token STOCK ORDER PORTFOLIO
+%token ARRAY STRUCT
 %token FUNCTION
 %token <int> INT_LITERAL
 %token <float> FLOAT_LITERAL
+%token <string> STRING_LITERAL
 %token <string> ID
-%token <string> STRING
 %token EOF
 
 %nonassoc NOELSE
@@ -24,6 +29,7 @@
 %left PLUS MINUS PLUSEQ MINUSEQ
 %left TIMES DIVIDE MODULO TIMESEQ DIVIDEEQ MODULOEQ
 %right NOT NEG
+%right DOT
 
 %start program
 %type <Ast.program> program
@@ -31,7 +37,7 @@
 %%
 
 program:
-    decls EOF { $1 }
+  decls EOF { $1 }
 
 decls:
     /* nothing */   { [], [] }
@@ -56,17 +62,16 @@ formal_list:
 |   formal_list COMMA typ ID    { ($3, $4) :: $1 }
 
 typ:
-    INT     { Int }
-|   FLOAT   { Float }
-|   BOOL    { Bool }
-|   VOID    { Void }
-|   STOCK   { Stock }
-|   ORDER   { Order }
+    INT         { Int }
+|   FLOAT       { Float }
+|   BOOL        { Bool }
+|   VOID        { Void }
+|   STOCK       { Stock }
+|   ORDER       { Order }
 |   PORTFOLIO   { Portfolio }
-|   STRING  { String }
-|   ARRAY   { Array }
-|   STRUCT  { Struct }
-|   FUNCTION    { Function }
+|   STRING      { String }
+|   ARRAY       { Array }
+|   STRUCT      { Struct }
 
 stmt_list:
     /* nothing */   { [] }
@@ -90,16 +95,17 @@ expr_opt:
 |   expr            { $1 }
 
 expr:
-    LITERAL             { Literal($1) }
-|   TRUE                { BoolLit(true) }
-|   FALSE               { BoolLit(false) }
+    INT_LITERAL         { IntLiteral($1) }
+|   FLOAT_LITERAL       { FloatLiteral($1) }
+|   STRING_LITERAL      { StringLiteral($1) }
+|   TRUE                { BoolLiteral(true) }
+|   FALSE               { BoolLiteral(false) }
 |   ID                  { Id($1) }
 |   expr PLUS   expr    { Binop($1, Add, $3) }
 |   expr MINUS  expr    { Binop($1, Sub, $3) }
 |   expr TIMES  expr    { Binop($1, Mult, $3) }
 |   expr DIVIDE expr    { Binop($1, Div, $3) }
 |   expr MODULO expr    { Binop($1, Mod, $3) }
-|   MINUS expr          { Unop (Sub, $2) }
 |   expr EQ     expr    { Binop($1, Equal, $3) }
 |   expr NEQ    expr    { Binop($1, Neq, $3) }
 |   expr LT     expr    { Binop($1, Less, $3) }
@@ -110,8 +116,10 @@ expr:
 |   expr OR     expr    { Binop($1, Or, $3) }
 |   NOT expr            { Unop (Not, $2) }
 |   expr DOT    expr    { ObjAccess($1, $3) }
-|   expr ASSIGN expr    { Assign($1, $3) }
+|   MINUS expr          { Unop(Neg, $2) }
+|   ID ASSIGN   expr    { Assign($1, $3) }
 |   ID LPAREN actuals_opt RPAREN    { Call($1, $3) }
+|   LPAREN expr RPAREN  { $2 }
 
 
 actuals_opt:
