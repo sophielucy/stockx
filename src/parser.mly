@@ -37,12 +37,26 @@ open Ast
 %%
 
 program:
-  decls EOF { Program($1) }
+        fdecls stmts EOF { Program($1, $2) }
 
-decls:
-    /* nothing */   { [], [] }
-|   decls fdecl     { ($2 :: fst $1), snd $1 }
-|   decls stmt      { fst $1, ($2 :: snd $1) }
+
+fdecls:
+    /* nothing */       { [] }
+  | fdecl_list          { List.rev $1 }
+
+fdecl_list:
+    fdecl               { [$1] }
+  | fdecl_list fdecl    { $2 :: $1 }
+
+
+stmts:
+    /* nothing */       { [] }
+  | stmt_list           { List.rev $1 }
+
+stmt_list:
+    stmt                { [$1] }
+  | stmt_list stmt      { $2 :: $1 }
+
 
 fdecl:
     FUNCTION ID LPAREN formals_opt RPAREN RETURN LPAREN typ RPAREN LBRACE stmt_list RBRACE
@@ -73,9 +87,6 @@ typ:
 |   ARRAY       { Array }
 |   STRUCT      { Struct }
 
-stmt_list:
-    /* nothing */   { [] }
-|   stmt_list stmt  { $2 :: $1 }
 
 stmt:
     expr SEMI                       { Expr $1 }

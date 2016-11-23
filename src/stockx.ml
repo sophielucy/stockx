@@ -34,8 +34,8 @@ let _ =
       match action with
           Compile ->
             match program with
-              Program(decls) ->
-              dump_module (Codegen.codegen_decls filename (decls))
+              Program(fdecls, stmts) ->
+              dump_module (Codegen.codegen_decls (stmts))
      with
         Exceptions.IllegalCharacter(c, ln) ->
           print_string

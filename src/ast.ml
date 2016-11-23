@@ -39,13 +39,13 @@ type func_decl = {
     body : stmt list;
   }
 
-type decls = func_decl list * stmt list 
-
-type program = Program of decls
+type program = Program of func_decl list * stmt list
 
 (* Pretty printing functions *)
+(*
 let string_of_program program =
   "string_or_program function not completed yet\n"
+*)
 (*
 let string_of_op = function
     Add -> "+"
