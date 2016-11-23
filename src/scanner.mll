@@ -82,7 +82,10 @@ rule token = parse
 | id as lxm         { ID(lxm) }
 | string as lxm     { STRING_LITERAL(lxm) }
 | eof               { EOF }
+| _ as char         { raise (Failure("illegal character " ^ Char.escaped char)) }
+(*
 | _ as illegal  { raise (Exceptions.IllegalCharacter(illegal, !lineno)) }
+*)
 
 and comment = parse
     "*/"        { token lexbuf }

@@ -39,7 +39,9 @@ type func_decl = {
     body : stmt list;
   }
 
-type program = Program of func_decl list * stmt list
+type decls = func_decl list * stmt list 
+
+type program = Program of decls
 
 (* Pretty printing functions *)
 let string_of_program program =
