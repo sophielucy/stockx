@@ -1,10 +1,9 @@
 open Llvm
-open Analyzer
 open Ast
-open Utils
 
-type action = TokenEndl | Tokens | PrettyPrint | Ast | Compile
+type action = Compile
 
+(*
 let _ =
   if Array.length Sys.argv < 2 then
     print_string (
@@ -16,7 +15,40 @@ let _ =
         "\t-a: Prints abstract syntax tree\n" ^
         "\t-c: Compiles to Llvm\n"
     )
+*)
+let _ =
+  if Array.length Sys.argv < 2 then
+    print_string (
+      "Usage: stockx [required-option] <source file>\n" ^
+        "required-option:\n" ^
+        "\t-c: Compiles to Llvm\n"
+    )
   else
+    let action = List.assoc Sys.argv.(1) [ ("-c", Compile) ] and
+    filename = Sys.argv.(2) in
+    let file_in = open_in filename in
+    try
+      let lexbuf = Lexing.from_channel file_in in
+      let token_list = Processor.build_token_list lexbuf in
+      let program = Processor.parser filename token_list in
+      match action with
+          Compile ->
+            match program with
+              Program(decls) ->
+              dump_module (Codegen.codegen_decls filename (decls))
+     with
+        Exceptions.IllegalCharacter(c, ln) ->
+          print_string
+          (
+            "In \"" ^ filename ^ "\", Illegal Character, '" ^
+            Char.escaped c ^ "', line " ^ string_of_int ln ^ "\n"
+          )
+
+
+
+
+
+(*
     let action = List.assoc Sys.argv.(1) [ (*("-tendl", TokenEndl);
                                            ("-t", Tokens);
                                            ("-p", PrettyPrint);
@@ -56,3 +88,4 @@ let _ =
             "character " ^ string_of_int !Processor.char_num ^ ", " ^
             "Syntax Error, token " ^ Utils.string_of_token !Processor.last_toke    n ^ "\n"
           )
+*)

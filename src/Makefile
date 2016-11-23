@@ -19,7 +19,7 @@ compilei: clean
 
 clean:
 	$(OCAMLBUILD) -clean
-	rm -rf scanner.ml parser.ml parser.mli ast.cmo ast.cmi parser.cmi
+	rm -rf scanner.ml parser.ml parser.mli ast.cmo ast.cmi parser.cmi parser.cmo scanner.cmo scanner.cmi
 
 
 native:
