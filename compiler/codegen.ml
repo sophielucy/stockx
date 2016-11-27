@@ -44,5 +44,5 @@ let translate (func_decls, stmts) =
     | A.Expr e -> ignore (expr builder e); builder
   in
 
-  List.iter A.string_of_stmt stmts;
+  List.iter print_endline ["hello"; "goodbye"];
   the_module
