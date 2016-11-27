@@ -37,7 +37,7 @@ open Ast
 %%
 
 program:
-        fdecls stmts EOF { Program($1, $2) }
+        fdecls stmts EOF { $1, $2 }
 
 
 fdecls:

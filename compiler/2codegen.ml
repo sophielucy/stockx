@@ -9,8 +9,8 @@ let builder = builder context
 let named_values:(string, llvalue) Hashtbl.t = Hashtbl.create 10
 let double_type = double_type context
 
-let i32_t = i32_type context;;
-let i8_t = i8_type context;;
+let i32_t = i32_type context
+let i8_t = i8_type context
 
 let rec codegen_expr llbuilder = function
     IntLiteral i            -> build_global_stringptr "Hi" "" llbuilder
@@ -44,24 +44,19 @@ let codegen_stmt llbuilder = function
   | While(e, s)         -> build_global_stringptr "Hi" "" llbuilder
   | Local(t, s, e)      -> build_global_stringptr "Hi" "" llbuilder
 
-let codegen_s stmt =
-    let handle_stmt = function
-      _ ->
-        let fty = function_type i32_t [| |] in
-        let f = define_function "main" fty the_module in
-        let llbuilder = builder_at_end context (entry_block f) in
-        let _ = codegen_stmt llbuilder (stmt) in
-        build_ret (const_int i32_t 0) llbuilder
+let handle_stmt stmt =
+  let fty = function_type i32_t [| |] in
+  let f = define_function "main" fty the_module in
+  let llbuilder = builder_at_end context (entry_block f) in
+  let _ = codegen_stmt llbuilder (stmt) in
+    build_ret (const_int i32_t 0) llbuilder
     in
     handle_stmt stmt
 
 (* for now just handling statements *)
-let codegen_decls decls =
-    let handle_stmt stmt =
-        codegen_s stmt
-    in
+let translate (fdecls, stmts) =
     let rec handle_stmts = function
       [] -> the_module
       | h :: t -> ignore(handle_stmt h); handle_stmts t
     in
-    handle_stmts decls
+    handle_stmts stmts
