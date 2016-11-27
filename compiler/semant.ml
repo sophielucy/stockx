@@ -6,4 +6,5 @@ module StringMap = Map.Make(String)
    throws an exception if something is wrong.
 *)
 
-let check (func_decls, stmts) = 3 + 4;;
+let check (func_decls, stmts) =
+  List.iter print_endline ["good"; "bye"]
