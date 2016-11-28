@@ -13,7 +13,7 @@ let digit = ['0'-'9']
 let int = digit+
 let float = (digit*) ['.'] digit+
 let char = ''' ( ascii | digit ) '''
-let string = '"' (ascii)* '"'
+let string = '"' ((ascii)* as s) '"'
 let id = alpha (alpha | digit | '_')*
 
 rule token = parse
@@ -80,12 +80,9 @@ rule token = parse
 | int as lxm        { INT_LITERAL(int_of_string lxm) }
 | float as lxm      { FLOAT_LITERAL(float_of_string lxm) }
 | id as lxm         { ID(lxm) }
-| string as lxm     { STRING_LITERAL(lxm) }
+| string            { STRING_LITERAL(s) }
 | eof               { EOF }
 | _ as char         { raise (Failure("illegal character " ^ Char.escaped char)) }
-(*
-| _ as illegal  { raise (Exceptions.IllegalCharacter(illegal, !lineno)) }
-*)
 
 and comment = parse
     "*/"        { token lexbuf }
