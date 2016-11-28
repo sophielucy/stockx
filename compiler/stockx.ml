@@ -1,15 +1,19 @@
-type action = Compile
+type action = Ast| LLVM_IR| Compile
 
 let _ =
   let action = if Array.length Sys.argv > 1 then
-    List.assoc Sys.argv.(1) [ ("-c", Compile) ] (*Generate, check LLVM IR*)
+    List.assoc Sys.argv.(1) [ ("-c", Compile);
+                    ("-a",Ast);
+                    ("-l",LLVM_IR)] (*Generate, check LLVM IR*)
   else Compile in
   let lexbuf = Lexing.from_channel stdin in
-  (* ERROR in line 10 *)
-  print_endline "1\n";
   let ast = Parser.program Scanner.token lexbuf in
-  print_endline "3\n";
+  (*
+  Semant.check ast;
+  *)
   match action with
-    Compile -> let m = Codegen.translate ast in
+    Ast -> print_string (Ast.string_of_program ast)
+  | LLVM_IR -> print_string (Llvm.string_of_llmodule (Codegen.translate ast))
+  | Compile -> let m = Codegen.translate ast in
     Llvm_analysis.assert_valid_module m;
     print_string (Llvm.string_of_llmodule m)

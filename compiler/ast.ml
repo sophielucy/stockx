@@ -42,12 +42,15 @@ type func_decl = {
 type program = func_decl list * stmt list
 
 (* Pretty printing functions *)
-(*
 let rec string_of_expr = function
     StringLiteral(str) -> str
+  | Call(str, el) ->
+      str ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
 
 let rec string_of_stmt = function
-    Expr(expr) -> print_endline (string_of_expr expr ^ ";\n")
-  | _ -> print_endline "ocaml's pretty fun!\n"
-*)
+    Expr(expr) -> string_of_expr expr
+  | _ -> "hurrdurr"
+
+let string_of_program (fdecls, stmts) =
+  String.concat "" (List.map string_of_stmt stmts) ^ "\n"
