@@ -6,6 +6,7 @@ default: test clean
 test: build
 	@./scanner_test.sh
 	@./parser_test.sh
+	@./compiler_test.sh
 
 build:
 	@echo Building tests and necessary files.
