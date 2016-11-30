@@ -43,10 +43,12 @@ type program = func_decl list * stmt list
 
 (* Pretty printing functions *)
 let rec string_of_expr = function
-    StringLiteral(str) -> str
+  | IntLiteral(i) -> "IntLiteral(" ^ string_of_int i ^ ")"
+  | StringLiteral(str) -> str
   | Call(str, el) ->
       str ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
+  | _ -> "hurrdurr"
 
 let rec string_of_stmt = function
     Expr(expr) -> string_of_expr expr

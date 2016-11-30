@@ -2,7 +2,7 @@
 #  - builds and manages all compiler components
 
 
-default: stockx 
+default: clean stockx 
 
 .PHONY: stockx.native
 stockx.native:

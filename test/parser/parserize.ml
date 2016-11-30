@@ -3,6 +3,7 @@ open Ast
 let txt_of_op = function
   | Add -> "Add"
   | Sub -> "Sub"
+  | _ -> "not-add-or-sub"
 
 let rec txt_of_expr = function
   | IntLiteral(i) -> "IntLiteral(" ^ string_of_int i ^ ")"
@@ -11,6 +12,7 @@ let rec txt_of_expr = function
       and v2 = txt_of_expr e2
       and oper = txt_of_op op in
       "Binop(" ^ v1 ^ ", " ^ oper ^ ", " ^ v2 ^ ")"
+  | _ -> "hurrdurr"
 
 let rec txt_of_stmt = function
   | Expr(expr) -> txt_of_expr expr

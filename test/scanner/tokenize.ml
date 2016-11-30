@@ -3,6 +3,7 @@ open Parser
 let stringify = function
   (* Punctuation *)
   | LPAREN -> "LPAREN"  | RPAREN -> "RPAREN"
+  | _ -> "hurrdurr"
 
 let _ =
   let lexbuf = Lexing.from_channel stdin in
