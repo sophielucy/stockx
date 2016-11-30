@@ -1,8 +1,8 @@
 open Parser
 
 let stringify = function
-  (* Punctuation *)
   | LPAREN -> "LPAREN"  | RPAREN -> "RPAREN"
+  | FLOAT_LITERAL(float) -> "FLOAT_LITERAL"
   | _ -> "hurrdurr"
 
 let _ =

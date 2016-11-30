@@ -7,6 +7,7 @@ let txt_of_op = function
 
 let rec txt_of_expr = function
   | IntLiteral(i) -> "IntLiteral(" ^ string_of_int i ^ ")"
+  | FloatLiteral(f) -> "FloatLiteral(" ^ string_of_float f ^ ")"
   | Binop(e1, op, e2) ->
       let v1 = txt_of_expr e1
       and v2 = txt_of_expr e2

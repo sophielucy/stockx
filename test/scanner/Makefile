@@ -4,9 +4,6 @@ INCLUDES = -I ../../compiler
 
 default: tokenize
 
-all:
-	cd ..; make all
-
 tokenize: $(OBJS)
 	$(OCAMLC) $(INCLUDES) -o tokenize $(OBJS)
 
