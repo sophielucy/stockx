@@ -16,7 +16,7 @@ let translate (func_decls, stmts) =
   let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func = L.declare_function "printf" printf_t the_module in
 
-  (* Define each statement -> into a list ?? *)
+  (* Define each function -> into a list ?? *)
   (*
     ...
   *)
@@ -33,25 +33,58 @@ let translate (func_decls, stmts) =
 
   (* Construct code for an expression; return its value *)
   let rec exprgen builder = function
-      A.IntLiteral i -> L.const_int i32_t i
+    | A.IntLiteral i -> L.const_int i32_t i
     | A.FloatLiteral f -> L.const_float double_t f
     | A.StringLiteral str -> L.build_global_stringptr str "" builder
     | A.BoolLiteral b -> L.const_int i1_t (if b then 1 else 0)
-    | A.Call ("print", [e]) -> let func e = match e with
-        A.IntLiteral x -> L.build_call printf_func [| int_format_str; (exprgen builder e) |] "printf" builder
-      | A.StringLiteral x -> L.build_call printf_func [| str_format_str; (exprgen builder e) |] "printf" builder
-      | A.FloatLiteral x -> L.build_call printf_func [| float_format_str; (exprgen builder e) |] "printf" builder
+    | A.Id str -> L.build_global_stringptr "Hi" "" builder
+
+    (* e1 and e2 are always same type -> do in semantic checker *)
+    | A.Binop (e1, op, e2) -> let matchexpr e = match e with
+      | A.IntLiteral x -> x
+      | A.FloatLiteral f -> 0
+      | A.StringLiteral str -> 0
+      | A.BoolLiteral b -> 0
+      | _ -> 0 in
+      (match op with
+        | A.Add -> exprgen builder (A.IntLiteral((matchexpr e1) + (matchexpr e2)))
+        | _ -> L.const_int i32_t ((matchexpr e1) - (matchexpr e2))
+      )
+        
+    | A.Unop (uop, e) -> L.build_global_stringptr "Hi" "" builder
+    | A.Assign (str, e) -> L.build_global_stringptr "Hi" "" builder
+    | A.Call ("print", [e]) -> let func e =
+                                 let f = (exprgen builder e) in
+                               match e with
+      | A.IntLiteral x -> L.build_call printf_func
+                          [| int_format_str; (exprgen builder e) |]
+                          "printf" builder
+      | A.StringLiteral x -> L.build_call printf_func
+                             [| str_format_str; (exprgen builder e) |]
+                             "printf"
+                             builder
+      | A.FloatLiteral x -> L.build_call printf_func
+                            [| float_format_str; (exprgen builder e) |]
+                            "printf" builder
       | A.BoolLiteral x -> let boolfunc b = match string_of_bool b with
-            | "true" -> L.build_call printf_func [| str_format_str; (L.build_global_stringptr "'true'" "" builder) |] "printf" builder
-            | "false" -> L.build_call printf_func [| str_format_str; (L.build_global_stringptr "'false'" "" builder) |] "printf" builder
-            | _ -> L.build_global_stringptr "Hi" "" builder
+            | "true" -> L.build_call printf_func
+                        [| str_format_str;
+                           (L.build_global_stringptr "'true'" "" builder)
+                        |] "printf" builder
+            | "false" -> L.build_call printf_func
+                         [| str_format_str;
+                            (L.build_global_stringptr "'false'" "" builder)
+                         |] "printf" builder
+            | _ -> L.build_global_stringptr "---error---" "" builder
             in boolfunc x
-      
-      | _ -> L.build_global_stringptr "Hi" "" builder
+      | _ -> L.build_call printf_func
+                          [| int_format_str; f |]
+                          "printf" builder
       in func e
-    
     (* or another A.Call *)
-    | _ -> L.build_global_stringptr "hi" "" builder
+    | A.Call (str, el) -> L.build_global_stringptr "Hi" "" builder
+    | A.ObjAccess (e1, e2) -> L.build_global_stringptr "Hi" "" builder
+    | A.Noexpr -> L.build_global_stringptr "Hi" "" builder
   in
 
   (* Build the code for the given statement; return the builder for
