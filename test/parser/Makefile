@@ -4,6 +4,9 @@ INCLUDES = -I ../../compiler
 
 default: parserize
 
+test:
+	cd ..; make build; ./parser_test.sh; make clean
+
 parserize: $(OBJS)
 	$(OCAMLC) $(INCLUDES) -o parserize $(OBJS)
 

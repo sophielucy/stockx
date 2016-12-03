@@ -4,8 +4,11 @@ INCLUDES = -I ../../compiler
 
 default: tokenize
 
-test:
-	cd ..; make build; ./scanner_test.sh; make clean
+build:
+	cd ..; make build
+
+test: build
+	cd ..; ./scanner_test.sh; make clean
 
 tokenize: $(OBJS)
 	$(OCAMLC) $(INCLUDES) -o tokenize $(OBJS)

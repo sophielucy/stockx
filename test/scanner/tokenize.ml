@@ -21,13 +21,30 @@ let stringify = function
   | AND     -> "AND"    | OR        -> "OR"
   | NOT     -> "NOT"
 
+  | DOT         -> "DOT"        | BAR       -> "BAR"
+  | LBRACKET    -> "LBRACKET"   | RBRACKET  -> "RBRACKET"
 
+  | IF      -> "IF"
+  | ELSE    -> "ELSE"
+  | FOR     -> "FOR"
+  | WHILE   -> "WHILE"
+  | RETURN  -> "RETURN"
 
+  | INT     -> "INT"    | FLOAT     -> "FLOAT"
+  | BOOL    -> "BOOL"   | VOID      -> "VOID"
+  | TRUE    -> "TRUE"   | FALSE     -> "FALSE"
+  | NULL    -> "NULL"   | ORDER     -> "ORDER"
+  | STOCK   -> "STOCK"  | PORTFOLIO -> "PORTFOLIO"
+  | STRUCT  -> "STRUCT" | ARRAY     -> "ARRAY"
+  | STRING  -> "STRING"
 
+  | FUNCTION -> "FUNCTION"
 
-
-  | FLOAT_LITERAL(float) -> "FLOAT_LITERAL"
-  | _ -> "hurrdurr"
+  | INT_LITERAL(i)      -> "INT_LITERAL"
+  | FLOAT_LITERAL(f)    -> "FLOAT_LITERAL"
+  | ID(id)              -> "ID"
+  | STRING_LITERAL(str) -> "STRING_LITERAL"
+  | EOF                 -> "EOF"
 
 let _ =
   let lexbuf = Lexing.from_channel stdin in

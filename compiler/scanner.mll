@@ -77,6 +77,7 @@ rule token = parse
 | "array"   { ARRAY }
 | "string"  { STRING }
 
+(* Literals *)
 | int as lxm        { INT_LITERAL(int_of_string lxm) }
 | float as lxm      { FLOAT_LITERAL(float_of_string lxm) }
 | id as lxm         { ID(lxm) }
