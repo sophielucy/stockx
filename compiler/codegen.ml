@@ -10,7 +10,13 @@ let translate (func_decls, stmts) =
   and i8_t     = L.i8_type    context
   and i1_t     = L.i1_type    context
   and double_t = L.double_type context in
-  (* and void_t = L.void_type  context in *)
+
+  let ltype_of_typ = function
+    | A.Int -> i32_t
+    | A.Float -> double_t
+    | A.Bool -> i1_t
+    | _ -> i32_t
+  in
 
   (* Declare printf(), which the print built-in function will call *)
   let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
@@ -99,7 +105,37 @@ let translate (func_decls, stmts) =
     | A.Local (typ, str, e) -> builder
 
   in
+
+  let function_decls =
+    let function_decl m fdecl =
+      let name = fdecl.A.fname and formal_types =
+        Array.of_list (List.map (fun (t, _) -> ltype_of_typ t) fdecl.A.formals)
+      in
+      let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types
+      in
+      StringMap.add name (L.define_function name ftype the_module, fdecl) m
+    in
+    List.fold_left function_decl StringMap.empty func_decls
+  in
+
+  let build_function_body fdecl =
+    let (the_function, _) = StringMap.find fdecl.A.fname function_decls in
+    let builder = L.builder_at_end context (L.entry_block the_function) in
+    
+    let add_terminal builder f =
+      match L.block_terminator (L.insertion_block builder) with
+        | Some _ -> ()
+        | None -> ignore (f builder)
+    in
+
+    let builder = stmtgen builder (A.Block fdecl.A.body) in
+
+    add_terminal builder (match fdecl.A.typ with
+      | A.Void -> L.build_ret_void
+      | t -> L.build_ret (L.const_int (ltype_of_typ t) 0))
+  in
   
+  ignore (List.iter build_function_body func_decls);
   ignore (List.fold_left stmtgen builder stmts);
   ignore (L.build_ret (L.const_int i32_t 0) builder);
   the_module
