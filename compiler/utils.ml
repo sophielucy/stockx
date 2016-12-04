@@ -67,6 +67,7 @@ let rec string_of_stmt = function
                             string_of_stmt s ^ " }"
   | While(e, s)     ->  "While(" ^ string_of_expr e ^ ") { " ^
                         string_of_stmt s ^ " }"
+  | Local(t, s)     -> "Local(" ^ string_of_typ t ^ ", " ^ s ^ ")"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

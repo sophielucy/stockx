@@ -37,28 +37,58 @@ let translate (func_decls, stmts) =
   let int_format_str   = L.build_global_stringptr "%d\n" "fmt" builder in
   let float_format_str = L.build_global_stringptr "%f\n" "fmt" builder in
 
+  let local_vars =
+    let add_local m (t, n) =
+      let local_var = L.build_alloca (ltype_of_typ t) n builder
+      in StringMap.add n local_var m
+    in
+
+    let rec get_locals mylocals = function
+      | [] -> mylocals
+      | [A.Local (t, s)] -> get_locals [(t, s)] []
+      | A.Local (t, s) :: r -> get_locals ( (t, s) :: mylocals) r
+      | _ :: r -> get_locals mylocals r
+    in
+
+    List.fold_left add_local StringMap.empty (get_locals [] stmts)
+  in
+
+  let lookup n = StringMap.find n local_vars in
+
   (* Construct code for an expression; return its value *)
   let rec exprgen builder = function
     | A.IntLiteral i -> L.const_int i32_t i
     | A.FloatLiteral f -> L.const_float double_t f
     | A.StringLiteral str -> L.build_global_stringptr str "" builder
     | A.BoolLiteral b -> L.const_int i1_t (if b then 1 else 0)
-    | A.Id str -> L.build_global_stringptr "Hi" "" builder
+    | A.Id s -> L.build_load (lookup s) s builder
 
     (* e1 and e2 are always same type -> do in semantic checker *)
-    | A.Binop (e1, op, e2) -> let matchexpr e = match e with
-      | A.IntLiteral x -> x
-      | A.FloatLiteral f -> 0
-      | A.StringLiteral str -> 0
-      | A.BoolLiteral b -> 0
-      | _ -> 0 in
+    | A.Binop (e1, op, e2) ->
+      let e1' = exprgen builder e1
+      and e2' = exprgen builder e2 in
       (match op with
-        | A.Add -> exprgen builder (A.IntLiteral((matchexpr e1) + (matchexpr e2)))
-        | _ -> L.const_int i32_t ((matchexpr e1) - (matchexpr e2))
-      )
+        | A.Add     -> L.build_add
+        | A.Sub     -> L.build_sub
+        | A.Mult    -> L.build_mul
+        | A.Div     -> L.build_sdiv
+        | A.And     -> L.build_and
+        | A.Or      -> L.build_or
+        | A.Equal   -> L.build_icmp L.Icmp.Eq
+        | A.Neq     -> L.build_icmp L.Icmp.Ne
+        | A.Less    -> L.build_icmp L.Icmp.Slt
+        | A.Leq     -> L.build_icmp L.Icmp.Sle
+        | A.Greater -> L.build_icmp L.Icmp.Sgt
+        | A.Geq     -> L.build_icmp L.Icmp.Sge
+      ) e1' e2' "tmp" builder
         
-    | A.Unop (uop, e) -> L.build_global_stringptr "Hi" "" builder
-    | A.Assign (str, e) -> L.build_global_stringptr "Hi" "" builder
+    | A.Unop (uop, e) -> let e' = exprgen builder e in
+        (match uop with
+          | A.Neg   -> L.build_neg
+          | A.Not   -> L.build_not
+        ) e' "tmp" builder
+    | A.Assign (s, e) -> let e' = exprgen builder e in
+                         ignore (L.build_store e' (lookup s) builder); e'
     | A.Call ("print", [e]) -> let func e =
                                  let f = (exprgen builder e) in
                                match e with
@@ -102,7 +132,7 @@ let translate (func_decls, stmts) =
     | A.If (e, s1, s2) -> builder
     | A.For (e1, e2, e3, s) -> builder
     | A.While (e, s) -> builder
-
+    | A.Local (t, s) -> builder
   in
 
   let function_decls =
