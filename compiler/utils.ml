@@ -67,6 +67,7 @@ let rec string_of_stmt = function
                             string_of_stmt s ^ " }"
   | While(e, s)     ->  "While(" ^ string_of_expr e ^ ") { " ^
                         string_of_stmt s ^ " }"
+  | Local(t, s)     -> "Local(" ^ string_of_typ t ^ ", " ^ s ^ ")"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
@@ -78,16 +79,10 @@ let rec string_of_func func =
   "\n}\n"
 
 let rec string_of_program stor = function
-  | ([], [])         -> String.concat "\n" (List.rev stor)
+  | ([], [])         -> String.concat "\n" (List.rev stor) ^ "\n"
   | ([], stmt :: tl) -> string_of_program (string_of_stmt stmt :: stor) ([], tl)
   | (func :: tl, []) -> string_of_program (string_of_func func :: stor) (tl, [])
 
     (* print all functions first, then statements *)
   | (func :: ftl, stmts) ->
         string_of_program (string_of_func func :: stor) (ftl, stmts)
-
-let _ =
-  let lexbuf = Lexing.from_channel stdin in
-  let ast = Parser.program Scanner.token lexbuf in
-  let result = string_of_program [] ast in
-  print_endline result
