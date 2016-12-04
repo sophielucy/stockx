@@ -66,7 +66,6 @@ type stmt =
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
   | While of expr * stmt
-  | Local of typ * string * expr
   | Array_Decl of array_decl
   | Array_Init of array_decl * expr list
   (* stock decl
