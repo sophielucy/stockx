@@ -11,7 +11,14 @@ type sexpr =
   | SAssign of string * expr
   | SCall of string * expr list
   | SObjAccess of expr * expr
+  | SArray_Assign of string * expr * expr 
+  | SArray_Access of string * expr
   | SNoexpr
+
+type svdecl = {
+  svname : string;
+  styp : typ;
+}
 
 type sstmt =
     SBlock of stmt list
@@ -21,12 +28,14 @@ type sstmt =
   | SFor of expr * expr * expr * stmt
   | SWhile of expr * stmt
   | SLocal of typ * string * expr
+  | SArray_Decl of array_decl
+  | SArray_Init of array_decl * expr list
 
 type sfunc_decl = {
-    sfname : string;
-    sformals : bind list;
-	styp : typ;
-    sbody : sstmt list;
-  }
+  sfname : string;
+  sformals : bind list;
+	sftyp : typ;
+  sbody : sstmt list;
+}
 
 type sprogram = sfunc_decl list * sstmt list
