@@ -102,7 +102,6 @@ let translate (func_decls, stmts) =
     | A.If (e, s1, s2) -> builder
     | A.For (e1, e2, e3, s) -> builder
     | A.While (e, s) -> builder
-    | A.Local (typ, str, e) -> builder
 
   in
 
