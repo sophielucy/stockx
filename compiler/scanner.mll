@@ -61,6 +61,7 @@ rule token = parse
 | "for"     { FOR }
 | "while"   { WHILE }
 | "return"  { RETURN }
+| "returns" { RETURNS }
 
 (* Data Types *)
 | "int"     { INT }

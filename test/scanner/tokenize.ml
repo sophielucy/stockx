@@ -29,6 +29,7 @@ let stringify = function
   | FOR     -> "FOR"
   | WHILE   -> "WHILE"
   | RETURN  -> "RETURN"
+  | RETURNS -> "RETURNS"
 
   | INT     -> "INT"    | FLOAT     -> "FLOAT"
   | BOOL    -> "BOOL"   | VOID      -> "VOID"

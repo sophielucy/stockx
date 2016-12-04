@@ -9,7 +9,7 @@ open Ast
 %token AND NOT OR PLUS MINUS TIMES DIVIDE ASSIGN MODULO
 %token PLUSEQ MINUSEQ TIMESEQ DIVIDEEQ MODULOEQ
 %token EQ NEQ LT LEQ GT GEQ BAR
-%token IF ELSE FOR WHILE RETURN
+%token IF ELSE FOR WHILE RETURN RETURNS
 %token STOCK ORDER PORTFOLIO
 %token ARRAY STRUCT
 %token FUNCTION
@@ -59,12 +59,12 @@ stmt_list:
 
 
 fdecl:
-    FUNCTION ID LPAREN formals_opt RPAREN RETURN LPAREN typ RPAREN LBRACE stmt_list RBRACE
+    FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE stmt_list RBRACE
     { {
         fname = $2;
         formals = $4;
-        typ = $8;
-        body = List.rev $11
+        typ = $7;
+        body = List.rev $9
     } }
 
 formals_opt:
@@ -126,7 +126,7 @@ expr:
 |   NOT expr            { Unop (Not, $2) }
 |   expr DOT    expr    { ObjAccess($1, $3) }
 |   MINUS expr          { Unop(Neg, $2) }
-|   typ ID ASSIGN   expr    { Assign($2, $4) }
+|   ID ASSIGN   expr    { Assign($1, $3) }
 |   ID LPAREN actuals_opt RPAREN    { Call($1, $3) }
 |   LPAREN expr RPAREN  { $2 }
 
