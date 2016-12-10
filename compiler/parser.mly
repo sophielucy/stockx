@@ -128,7 +128,7 @@ expr:
 |   NOT expr            { Unop (Not, $2) }
 |   expr DOT    expr    { ObjAccess($1, $3) }
 |   MINUS expr          { Unop(Neg, $2) }
-|   ID ASSIGN   expr    { Assign($1, $3) }
+|   ID ASSIGN expr    { Assign($1, $3) }
 |   ID LPAREN actuals_opt RPAREN    { Call($1, $3) }
 |   LPAREN expr RPAREN  { $2 }
 

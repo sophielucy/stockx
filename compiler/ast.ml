@@ -1,10 +1,10 @@
-(* Abstract Syntax Tree and functions for printing it *)
+(* Abstract Syntax Tree and functions for printing them for StockX *)
 
-type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | Mod | Addeq | Subeq | Multeq | Diveq | Modeq | And | Or | Dot | Bar
+type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | And | Or
 
 type uop = Neg | Not
 
-type typ = Int | Float | Bool | Null | Void | Stock | Order | Portfolio | String | Array | Struct
+type typ = Int | Float | Bool | Null | Void | Stock | Order | Portfolio | String | Array | Struct 
 
 type var_decl = {
   vname : string;
@@ -48,6 +48,7 @@ type expr =
   | ObjAccess of expr * expr
   | Array_Assign of string * expr * expr 
   | Array_Access of string * expr
+ 
   (* stock assign
     stock access
     order assign
@@ -68,6 +69,7 @@ type stmt =
   | While of expr * stmt
   | Array_Decl of array_decl
   | Array_Init of array_decl * expr list
+  | Local of var_decl
   (* stock decl
     stock init
     order decl
@@ -94,12 +96,6 @@ let string_of_op = function
   | Sub -> "-"
   | Mult -> "*"
   | Div -> "/"
-  | Mod -> "%"
-  | Addeq -> "+="
-  | Subeq -> "-="
-  | Multeq -> "*="
-  | Diveq -> "/="
-  | Modeq -> "%="
   | Equal -> "=="
   | Neq -> "!="
   | Less -> "<"
@@ -108,9 +104,6 @@ let string_of_op = function
   | Geq -> ">="
   | And -> "and"
   | Or -> "or"
-
-  | Dot -> "."
-  | Bar -> "|"
 
 
 let string_of_uop = function
@@ -140,7 +133,7 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) -> string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | ObjAccess(e1, e2) -> string_of_expr e1 ^ "." ^ string_of_expr e2
-  | Assign(e1, e2) -> string_of_expr e1 ^ " = " ^ string_of_expr e2
+  | Assign(a, e1) -> a ^ " = " ^ string_of_expr e1
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
@@ -159,20 +152,17 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
-  | Local(t, id) -> string_of_typ t ^ id ^ ";"
-  | Local(t, id, e) -> string_of_typ t ^ id ^ "=" ^ expr e ^ ";"
   | _ -> "hurrdurr"
 
 
-let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+let string_of_vdecl v = string_of_typ v.vtyp ^ " " ^ v.vname ^ ";\n"
 
 let string_of_fdecl fdecl =
-  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
-  ")\n{\n" ^
-  String.concat "" (List.map string_of_vdecl fdecl.typ) ^
+  string_of_typ fdecl.ftyp ^ " " ^ fdecl.fname ^ "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")\n{\n" ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
-let string_of_program (vars, funcs) =
-  String.concat "" (List.map string_of_stmt stmts) ^ "\n"
+let string_of_program (stmts, funcs) =
+  String.concat "" (List.map string_of_stmt stmts) ^ "\n" ^ 
+  String.concat "\n" (List.map string_of_fdecl funcs)
 
