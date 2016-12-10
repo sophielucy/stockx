@@ -83,7 +83,7 @@ type stmt =
 type func_decl = {
   fname : string;
   formals : var_decl list;
-	ftyp : typ;
+  ftyp : typ;
   body : stmt list;
 }
 
@@ -130,15 +130,15 @@ let rec string_of_expr = function
   | BoolLiteral(true) -> "true"
   | BoolLiteral(false) -> "false"
   | Id(s) -> s
+
   | Binop(e1, o, e2) -> string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | ObjAccess(e1, e2) -> string_of_expr e1 ^ "." ^ string_of_expr e2
   | Assign(a, e1) -> a ^ " = " ^ string_of_expr e1
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
-  | _ -> "hurrdurr"
-
 
 let rec string_of_stmt = function
     Block(stmts) ->
@@ -152,8 +152,6 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
-  | _ -> "hurrdurr"
-
 
 let string_of_vdecl v = string_of_typ v.vtyp ^ " " ^ v.vname ^ ";\n"
 
