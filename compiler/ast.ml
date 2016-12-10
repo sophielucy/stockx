@@ -18,7 +18,7 @@ type array_decl = {
 
 }
 
-type stock_decl = {
+(* type stock_decl = {
   sname : string;
 }
 
@@ -33,7 +33,7 @@ type portfolio_decl = {
 
 type struct_decl = {
   
-}
+} *)
 
 type expr =
     IntLiteral of int
@@ -127,17 +127,17 @@ let string_of_typ = function
   | Portfolio -> "portfolio"
   | String -> "string"
   | Array -> "array"
-  | Structure -> "struct"
-  | Function -> "func"
+  | Struct -> "struct"
+  | Null -> "null"
   
 let rec string_of_expr = function
     StringLiteral(str) -> str
+  | FloatLiteral(f) -> "FloatLiteral("^ string_of_float f ^")" 
   | IntLiteral(i) -> "IntLiteral(" ^ string_of_int i ^ ")"
   | BoolLiteral(true) -> "true"
   | BoolLiteral(false) -> "false"
   | Id(s) -> s
-  | Op(e1, o, e2) ->
-      string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+  | Binop(e1, o, e2) -> string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | ObjAccess(e1, e2) -> string_of_expr e1 ^ "." ^ string_of_expr e2
   | Assign(e1, e2) -> string_of_expr e1 ^ " = " ^ string_of_expr e2

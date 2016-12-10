@@ -86,6 +86,7 @@ typ:
 |   STRING      { String }
 |   ARRAY       { Array }
 |   STRUCT      { Struct }
+|   NULL        { Null }
 
 
 stmt:
