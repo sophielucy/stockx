@@ -7,8 +7,8 @@ type uop = Neg | Not
 type typ = Int | Float | Bool | Null | Void | Stock | Order | Portfolio | String | Array | Struct 
 
 type var_decl = {
+  vtyp  : typ;
   vname : string;
-  vtyp : typ;
 }
 
 (* type stock_decl = {
@@ -69,6 +69,7 @@ type stmt =
   | Array_Decl of array_decl
   | Array_Init of array_decl * expr list
   | V_Decl of var_decl
+  | V_Assign of var_decl * expr
   (* stock decl
     stock init
     order decl
@@ -140,7 +141,7 @@ let rec string_of_expr = function
 
 let string_of_vdecl v = string_of_typ v.vtyp ^ " " ^ v.vname ^ ";\n"
 
-let string_of_array_decl array_decl = string_of_typ array_decl.atyp ^ " " ^ 
+let string_of_array_decl array_decl = "array " ^ string_of_typ array_decl.atyp ^ " " ^ 
 	array_decl.aname ^ "[" ^ string_of_expr array_decl.asize ^ "]"		
 
 let string_of_arraylist list = "[" ^ String.concat ", " (List.map string_of_expr list) ^ "]"
@@ -159,8 +160,8 @@ let rec string_of_stmt = function
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
   | Array_Decl(aname) -> string_of_array_decl aname ^ ";\n"		
   | Array_Init(aname, list) -> string_of_array_decl aname ^ " = " ^ string_of_arraylist list ^ ";\n"
-  | V_Decl(v) -> " ^ string_of_vdecl v ^ ";"
-  | V_Decl(typ, id, e) -> string_of_typ typ ^ id ^ "=" ^ expr e ^ ";"
+  | V_Decl(v) -> string_of_vdecl v ^ ";\n"
+  | V_Assign(v, e) -> string_of_vdecl v ^ " = " ^ string_of_expr e ^ ";\n"
 
 let string_of_fdecl fdecl =
   string_of_typ fdecl.ftyp ^ " " ^ fdecl.fname ^ "(" ^ 
