@@ -2,137 +2,142 @@
 
 open Ast
 open Sast
+exception Error of string
 
 type scope = {
 	scope_name : string;
-	scope_type : Ast.typ;	
-}
+	scope_type : Ast.typ;
+	return_typ : void;
+(* 	in_func = false;	
+ *)}
 
 type environ = {
 	func_table : Sast.sfunc_decl list;
-	symbol_table : Ast.bind;
-	checked : Sast.sstatement list;
+	symbol_table : Ast.var_decl list;
+	checked_statements : Sast.sstatement list;
 	env_scope : scope;
+	returned = bool;
 }
 
-
-let init_environ = {
-	func_table = built_in_decls;	
+let init_env = {
+	func_table = [];	
 	symbol_table = [];
-	checked = [];
-	env_scope = SOMETHING;
+	checked_statements = [];
+	env_scope = {};
+	returned = false;
 }
 
-(* find variable *)
-(* check for variable duplicates and catch undefined variables *)
-let rec check_var (scope:symbol_table) name =
-try
- 	List.find(fun(n,_) -> n = name)scope.vars; 
- 	raise(Except("Variable '" ^ name ^ "' is already defined"))
- with Not_found -> sfname;
+(* let init_scope = { parent = None; vars = [];} in
+{
+	scope = init_scope;
+	func_table = [];	
+	symbol_table = [];
+	checked_statements = [];
+} *)
 
-(* check if function has been defined *)
-let rec find_func(functions: sfunc_decl list) name = 
+(* check for global variable name duplicates *)
+
+
+(* check for argument name duplicates *)
+let check_formals sformals (formal: var_decl) = 
+let found = List.exists (fun sf -> formal.vname = sf.sfname) sformals in
+	if found then raise (Except("Formal parameter '" ^ formal.vname ^ "' is already defined!")) 
+	else formal :: sformals
+
+(* check for function name duplicates *)
+let check_functions env func_name=
+try ignore (List.find (fun f -> f.fname = func_name) environ.func_table; 
+	raise (Except("Function '" ^ func_name ^ "' is already defined!"))
+	with Not_found -> sfname)
+
+(* check for duplicates in symbol table and catch undefined variables else add to symbol table *)
+let rec check_var env (vdecl: var_decl) = 
+	let found = List.exists (fun symbol -> symbol.vname = vdecl.vname) env.symbol_table in
+	if found then raise (Except("Variable '" ^ vdecl.vname ^ "' is already defined!"))
+	else vdecl
+
+
+(* check left and right of binary operations for type error *)
+let check_binop (ltyp: typ) (rtyp: typ) env = 
+match (lhs, rhs) with
+	  (Int, Int) 		-> Int
+	| (Float, Float) 	-> Float
+	| (_, _) -> raise (Error("Binary operations can only be of type int or type float"))
+
+(* (* check variable has been initialised *)
+let check_vdecl vdecl_name env =
 	try 
+	let variable = List.find(fun s -> s.vname = vdecl_name)env.symbol_table in
+		{ sexpr = Svar(name); sdtype = var.dtype; }
+	with Not_found -> raise (Except("Symbol '" ^ name ^ "' is uninitialized!")) 
+ *)
 
-	List.find(fun f -> f.sfname = name) functions
-	with Not_found -> 	raise(Except("Function '" ^ name ^ "' has not been defined"))
+(* type check expressions *)
+let rec check_expr (e:expr) env = 
+	match e with
+	  	IntLiteral(i) 	-> SIntLiteral(i), Int
+	  | FloatLiteral(f) -> SFloatLiteral(f), Float
+	  | StringLiteral(s)-> SStringLiteral(s), String
+	  | BoolLiteral(b) 	-> SBoolLiteral(b), Bool
+(* 	  check for declaration and get name and type*)
+	  | Id -> let var = 
+	  | Binop(lhs, binop, rhs) -> check_ret_binop lhs binop rhs
+	  | Unop(unop, rhs) -> check_unop rhs unop env 
+	  | Assign(lhs, rhs) -> check_assign lhs rhs env 
+	  | Call(func, el) -> check_func_call func el env
+	  | Array_Assign(name, index, e1) -> check_array_assign name index e1 env
+	  | Array_Access(name, index) -> check_array_access name index env
+	  | Noexpr -> SNoexpr, Void 
+	  | _ -> SNoexpr, Void
+ 
+(* check binop return type *)
+and check_ret_typ (lhs: expr)(operator: binop)(rhs: expr) env = 
 
-(* check right side can be assigned to left side *)
-let check_assign lvaltyp rvaltyp = 
-	trylvaltyp == rvaltyp then raise (Except("Symbol '"^ ^"' should be of type "^lvaltyp ))
+match operator with 
+	  Add -> SBinop(lhs, operator, rhs), check_binop t1 t2 env
+	| Sub -> SBinop(lhs, operator, rhs), check_binop t1 t2 env
+	| Mult -> SBinop(lhs, operator, rhs), check_binop t1 t2 env
+	| Div -> SBinop(lhs, operator, rhs), check_binop t1 t2 env
+	| Equal -> SBinop(lhs, operator, rhs), check_binop t1 t2 env
+	| Neq -> SBinop(lhs, operator, rhs), check_binop t1 t2 env
+	| Less -> SBinop(lhs, operator, rhs), check_binop t1 t2 env
+	| Leq -> SBinop(lhs, operator, rhs), check_binop t1 t2 env
+	| Greater -> SBinop(lhs, operator, rhs), check_binop t1 t2 env
+	| Geq -> SBinop(lhs, operator, rhs), check_binop t1 t2 env
+	| And -> SBinop(lhs, operator, rhs), check_binop t1 t2 env
+	| Or-> SBinop(lhs, operator, rhs), check_binop t1 t2 env
 
-(* check variable declaration *)
-let check_vdecl = 
+and check_unop (rhs:expr) (operator: unop) env = 
+let typ = rhs.styp;
+match typ with
+	  Int -> SUnop(operator, rhs), Int
+	| Float -> SUnop(operator, rhs), Float
+	| t -> raise (Except("Unary operations are not supported for type '" ^ Ast.string_of_typ typ ^ "'!"))		
 
-in
+(* check right side can be assigned to left side in variable declarations *)
+and check_assign (lhs: vdecl)(rhs: expr) env = 
+
+
+and check_func_call (func_name: string) (el: expr list) env =
+
+
+and check_array_assign (array_name: string) (index: expr) (e1: expr) env =
+
+and check_array_access (array_name: string) (index: expr) =
 
 (* add built in functions to function table *)
-let built_in_decls = [
+let built_in_decls = Stringmap.add[
 {
-	fname = "map";
-	formals = 
-	typ = 
-	body = 
-};
-{
-	fname = "delta";
-	formals = 
-	typ = 
-	body = 
-};
-{
-	fname = "stddev";
-	formals = [(Array, "timeseries")];
-	typ = Float;
+	fname = "print_int";
+	formals = [(vtyp = Int,vname = "x")];
+	typ = Void;
 	body = [];
 };
 {
-	fname = "correlation";
-	formals = [(Array, "x");(Array, "y")];
-	typ = Float;
+	fname = "print_str";
+	formals = [(vtyp = String, vname = "x")];
+	typ = Void;	
 	body = [];
 };
-{
-	fname = "covariance";
-	formals = 
-	typ = 
-	body = 
-};
-{
-	fname = "regression";
-	formals = 
-	typ = 
-	body = 
-};
-{
-	fname = "emwa";
-	formals = 
-	typ = 
-	body = 
-};
-{
-	fname = "lma";
-	formals = 
-	typ = 
-	body = 
-}
 ]
-(* check if function is defined *)
-let check_func = 
-
-(* check program *)
-let check_prog
-
-
-
-let check (func_decls, stmts) =
-
-  (* Raise an exception if teh given list has a duplicate *)
-  let report_duplicate exceptf list =
-    let rec helper = function
-      | n1 :: n2 :: _ when n1 = n2 -> raise (Failure (exceptf n1))
-      | _ :: t -> helper t
-      | [] -> ()
-    in helper (List.sort compare list)
-  in
-
-  (* Raise an exception if the given rvalue type cannot be assigned to
-     the given lvalue type *)
-  let check_assign lvaluet rvaluet err =
-    if lvaluet == rvaluet then lvaluet else raise err
-  in
-
-  (**** Checking Functions ****)
-
-  if List.mem "print" (List.map (fun fd -> fd.fname) func_decls)
-  then raise (Failure ("function print may not be defined")) else ();
-
-  report_duplicate (fun n -> "duplicate function " ^ n)
-    (List.map (fun fd -> fd.fname) func_decls);
-
-
-
-
-  ()
-
+in

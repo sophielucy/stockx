@@ -5,7 +5,6 @@ let string_of_op = function
   | Sub     -> "Sub"
   | Mult    -> "Mult"
   | Div     -> "Div"
-  | Mod     -> "Mod"
   | Equal   -> "Equal"
   | Neq     -> "Neq"
   | Less    -> "Less"

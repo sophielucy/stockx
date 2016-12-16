@@ -10,7 +10,6 @@ type sexpr =
   | SUnop of uop * expr
   | SAssign of string * expr
   | SCall of string * expr list
-  | SObjAccess of expr * expr
   | SArray_Assign of string * expr * expr 
   | SArray_Access of string * expr
   | SNoexpr
@@ -33,7 +32,7 @@ type sstmt =
 
 type sfunc_decl = {
   sfname : string;
-  sformals : bind list;
+  sformals : svdecl list;
 	sftyp : typ;
   sbody : sstmt list;
 }
