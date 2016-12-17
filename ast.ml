@@ -4,7 +4,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | An
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Void | Float | String | Array
+type typ = Int | Bool | Void | Float | String | Array | Struct
 
 type var_decl = {
   vtyp  : typ;
