@@ -110,10 +110,6 @@ let string_of_array_decl array_decl = "array " ^ string_of_typ array_decl.atyp ^
 
 let string_of_arraylist list = "[" ^ String.concat ", " (List.map string_of_expr list) ^ "]"
 
-let string_of_struct_decl struct_decl = "struct " ^ struct_decl.sname ^ " = {}"
- 
-let string_of_struct_list list = "{" ^ String.concat ", " (List.map string_of_stmt list) ^ "}"
-
 let rec string_of_stmt = function
     Block(stmts) ->
       "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
@@ -132,6 +128,10 @@ let rec string_of_stmt = function
   | Struct_Init(struct_name, list) -> string_of_struct_decl struct_name ^ " = " ^ string_of_struct_list list ^ ";\n"
   | V_Decl(v) -> string_of_vdecl v ^ ";\n"
   | V_Assign(v, e) -> string_of_vdecl v ^ " = " ^ string_of_expr e ^ ";\n"
+
+let string_of_struct_decl struct_decl = "struct " ^ struct_decl.sname ^ " = {}"
+ 
+let string_of_struct_list list = "{" ^ String.concat ", " (List.map string_of_stmt list) ^ "}"
 
 let string_of_fdecl fdecl =
   fdecl.fname ^ 
