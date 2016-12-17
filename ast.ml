@@ -46,6 +46,8 @@ type stmt =
   | While of expr * stmt
   | Array_Decl of array_decl
   | Array_Init of array_decl * expr list
+  | Struct_Decl of struct_decl 
+  | Struct_Init of struct_decl * stmt list
   | V_Decl of var_decl
   | V_Assign of var_decl * expr
 
