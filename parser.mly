@@ -14,6 +14,7 @@ open Ast
 %token <string> STRING_LITERAL
 %token <string> ID
 %token ARRAY
+%token STRUCT
 %token FUNCTION
 %token EOF
 
@@ -77,6 +78,7 @@ typ:
   | VOID   { Void }
   | STRING { String }
   | ARRAY  { Array }
+  | STRUCT { Struct }
 
 stmt:
     expr SEMI                               { Expr $1 }
@@ -95,7 +97,7 @@ expr_opt:
   | expr          { $1 }
 
 expr:
-    INT_LITERAL              { Literal($1) }
+    INT_LITERAL          { Literal($1) }
   | FLOAT_LITERAL        { FloatLiteral($1) }
   | STRING_LITERAL       { StringLiteral($1) }
   | TRUE                 { BoolLit(true) }

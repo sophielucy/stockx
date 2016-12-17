@@ -64,6 +64,7 @@ rule token = parse
 | "false"   { FALSE }
 | "array"   { ARRAY }
 | "string"  { STRING }
+| "struct"	{ STRUCT }
 
 (* Literals *)
 | int as lxm        { INT_LITERAL(int_of_string lxm) }

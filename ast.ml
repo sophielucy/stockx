@@ -31,6 +31,11 @@ type array_decl = {
   asize : expr;
 }
 
+type struct_decl = {
+  sname : string;
+  ssize : expr;
+}
+
 type stmt =
     Block of stmt list
   | Expr of expr
@@ -77,6 +82,7 @@ let string_of_typ = function
   | Void -> "void"
   | String -> "string"
   | Array -> "array"
+  | Struct -> "struct"
 
 let rec string_of_expr = function
     StringLiteral(str) -> str
@@ -92,6 +98,8 @@ let rec string_of_expr = function
   | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Array_Assign(id, index, e) -> id ^ "[" ^ string_of_expr index ^"] = " ^ string_of_expr e
   | Array_Access(id, index) -> id ^ "[" ^ string_of_expr index ^ "]"  
+  | Struct_Assign(t, id, index_name, e) -> t ^ " " ^ id ^ "." ^ string_of_expr index_name ^ "=" ^ string_of_expr e
+  | Struct_Access(id, index_name) -> id ^ "." ^ string_of_expr index_name
   | Noexpr -> ""
 
 let string_of_vdecl v = string_of_typ v.vtyp ^ " " ^ v.vname ^ ";\n"
@@ -100,6 +108,10 @@ let string_of_array_decl array_decl = "array " ^ string_of_typ array_decl.atyp ^
         array_decl.aname ^ "[" ^ string_of_expr array_decl.asize ^ "]"
 
 let string_of_arraylist list = "[" ^ String.concat ", " (List.map string_of_expr list) ^ "]"
+
+let string_of_struct_decl struct_decl = "struct " ^ struct_decl.sname ^ " = {}"
+ 
+let string_of_struct_list list = "{" ^ String.concat ", " (List.map string_of_stmt list) ^ "}"
 
 let rec string_of_stmt = function
     Block(stmts) ->
@@ -115,6 +127,8 @@ let rec string_of_stmt = function
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
   | Array_Decl(aname) -> string_of_array_decl aname ^ ";\n"
   | Array_Init(aname, list) -> string_of_array_decl aname ^ " = " ^ string_of_arraylist list ^ ";\n"
+  | Struct_Decl(struct_name) -> string_of_struct_decl struct_name ^ ";\n"
+  | Struct_Init(struct_name, list) -> string_of_struct_decl struct_name ^ " = " ^ string_of_struct_list list ^ ";\n"
   | V_Decl(v) -> string_of_vdecl v ^ ";\n"
   | V_Assign(v, e) -> string_of_vdecl v ^ " = " ^ string_of_expr e ^ ";\n"
 
