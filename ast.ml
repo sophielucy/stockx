@@ -50,6 +50,8 @@ type func_decl = {
     body : stmt list;
   }
 
+type program = func_decl list * stmt list
+
 let string_of_op = function
     Add -> "+"
   | Sub -> "-"
