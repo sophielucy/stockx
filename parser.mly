@@ -13,7 +13,6 @@ open Ast
 %token <float> FLOAT_LITERAL
 %token <string> STRING_LITERAL
 %token <string> ID
-%token ARRAY
 %token FUNCTION
 %token EOF
 
@@ -76,48 +75,67 @@ typ:
   | FLOAT  { Float }
   | VOID   { Void }
   | STRING { String }
-  | ARRAY  { Array }
+
+var_decl:
+  typ ID
+  {{
+    vtyp  = $1;
+    vname = $2;
+  }}
+  
+array_decl:
+  typ ID LBRACKET expr_opt RBRACKET
+  {{
+    atype = $1;
+    aname = $2;
+    asize = $4;
+  }}
 
 stmt:
-    expr SEMI                               { Expr $1 }
-  | RETURN SEMI                             { Return Noexpr }
-  | RETURN expr SEMI                        { Return $2 }
-  | LBRACE stmt_list RBRACE                 { Block(List.rev $2) }
-  | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
-  | IF LPAREN expr RPAREN stmt ELSE stmt    { If($3, $5, $7) }
+    expr SEMI                               		 { Expr $1 }
+  | RETURN SEMI                             		 { Return Noexpr }
+  | RETURN expr SEMI                        		 { Return $2 }
+  | LBRACE stmt_list RBRACE                 		 { Block(List.rev $2) }
+  | IF LPAREN expr RPAREN stmt %prec NOELSE 		 { If($3, $5, Block([])) }
+  | IF LPAREN expr RPAREN stmt ELSE stmt    		 { If($3, $5, $7) }
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
-                                            { For($3, $5, $7, $9) }
-  | WHILE LPAREN expr RPAREN stmt           { While($3, $5) }
-  | typ ID SEMI                             { ($1, $2) }
+                                            		 { For($3, $5, $7, $9) }
+  | WHILE LPAREN expr RPAREN stmt           		 { While($3, $5) }
+  | var_decl SEMI                             		 { V_Decl($1) }
+  | var_decl ASSIGN expr SEMI                            { V_Assign($1) }
+  | array_decl SEMI			    		 { Array_Decl($1) }
+  | array_decl ASSIGN LBRACKET actuals_opt RBRACKET SEMI { Array_Init($1, $4) }
 
 expr_opt:
     /* nothing */ { Noexpr }
   | expr          { $1 }
 
 expr:
-    INT_LITERAL              { Literal($1) }
-  | FLOAT_LITERAL        { FloatLiteral($1) }
-  | STRING_LITERAL       { StringLiteral($1) }
-  | TRUE                 { BoolLit(true) }
-  | FALSE                { BoolLit(false) }
-  | ID                   { Id($1) }
-  | expr PLUS   expr     { Binop($1, Add,   $3) }
-  | expr MINUS  expr     { Binop($1, Sub,   $3) }
-  | expr TIMES  expr     { Binop($1, Mult,  $3) }
-  | expr DIVIDE expr     { Binop($1, Div,   $3) }
-  | expr EQ     expr     { Binop($1, Equal, $3) }
-  | expr NEQ    expr     { Binop($1, Neq,   $3) }
-  | expr LT     expr     { Binop($1, Less,  $3) }
-  | expr LEQ    expr     { Binop($1, Leq,   $3) }
-  | expr GT     expr     { Binop($1, Greater, $3) }
-  | expr GEQ    expr     { Binop($1, Geq,   $3) }
-  | expr AND    expr     { Binop($1, And,   $3) }
-  | expr OR     expr     { Binop($1, Or,    $3) }
-  | MINUS expr %prec NEG { Unop(Neg, $2) }
-  | NOT expr             { Unop(Not, $2) }
-  | ID ASSIGN expr       { Assign($1, $3) }
-  | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
-  | LPAREN expr RPAREN   { $2 }
+    INT_LITERAL          			{ Literal($1) }
+  | FLOAT_LITERAL        			{ FloatLiteral($1) }
+  | STRING_LITERAL       			{ StringLiteral($1) }
+  | TRUE                 			{ BoolLit(true) }
+  | FALSE                			{ BoolLit(false) }
+  | ID                   			{ Id($1) }
+  | ID LBRACKET expr RBRACKET ASSIGN expr 	{ Array_Assign($1, $3, $6) }
+  | ID LBRACKET expr RBRACKET			{ Array_Accesss($1, $3) }
+  | expr PLUS   expr     			{ Binop($1, Add,   $3) }
+  | expr MINUS  expr     			{ Binop($1, Sub,   $3) }
+  | expr TIMES  expr     			{ Binop($1, Mult,  $3) }
+  | expr DIVIDE expr     			{ Binop($1, Div,   $3) }
+  | expr EQ     expr     			{ Binop($1, Equal, $3) }
+  | expr NEQ    expr     			{ Binop($1, Neq,   $3) }
+  | expr LT     expr     			{ Binop($1, Less,  $3) }
+  | expr LEQ    expr     			{ Binop($1, Leq,   $3) }
+  | expr GT     expr     			{ Binop($1, Greater, $3) }
+  | expr GEQ    expr     			{ Binop($1, Geq,   $3) }
+  | expr AND    expr     			{ Binop($1, And,   $3) }
+  | expr OR     expr     			{ Binop($1, Or,    $3) }
+  | MINUS expr %prec NEG 			{ Unop(Neg, $2) }
+  | NOT expr             			{ Unop(Not, $2) }
+  | ID ASSIGN expr       			{ Assign($1, $3) }
+  | ID LPAREN actuals_opt RPAREN 		{ Call($1, $3) }
+  | LPAREN expr RPAREN   			{ $2 }
 
 actuals_opt:
     /* nothing */ { [] }
