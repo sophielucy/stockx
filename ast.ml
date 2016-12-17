@@ -23,6 +23,8 @@ type expr =
   | Call of string * expr list
   | Array_Assign of string * expr * expr
   | Array_Access of string * expr
+  | Struct_Assign of string * expr * expr
+  | Struct_Access of string * expr
   | Noexpr
 
 type array_decl = {
@@ -33,7 +35,6 @@ type array_decl = {
 
 type struct_decl = {
   sname : string;
-  ssize : expr;
 }
 
 type stmt =
@@ -98,7 +99,7 @@ let rec string_of_expr = function
   | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Array_Assign(id, index, e) -> id ^ "[" ^ string_of_expr index ^"] = " ^ string_of_expr e
   | Array_Access(id, index) -> id ^ "[" ^ string_of_expr index ^ "]"  
-  | Struct_Assign(t, id, index_name, e) -> t ^ " " ^ id ^ "." ^ string_of_expr index_name ^ "=" ^ string_of_expr e
+  | Struct_Assign(id, index_name, e) -> id ^ "." ^ string_of_expr index_name ^ "=" ^ string_of_expr e
   | Struct_Access(id, index_name) -> id ^ "." ^ string_of_expr index_name
   | Noexpr -> ""
 
