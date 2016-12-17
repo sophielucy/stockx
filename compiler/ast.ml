@@ -7,8 +7,12 @@ type uop = Neg | Not
 type typ = Int | Float | Bool | Null | Void | String | Array | Struct 
 
 type var_decl = {
+  vtyp  : typ;
   vname : string;
+<<<<<<< HEAD
   vtyp : typ;
+=======
+>>>>>>> 8e66808c7dde08037874940242eb681edb08b782
 }
 
 (* type stock_decl = {
@@ -64,6 +68,10 @@ type stmt =
   | Array_Decl of array_decl
   | Array_Init of array_decl * expr list
   | V_Decl of var_decl
+<<<<<<< HEAD
+=======
+  | V_Assign of var_decl * expr
+>>>>>>> 8e66808c7dde08037874940242eb681edb08b782
   (* stock decl
     stock init
     order decl
@@ -135,8 +143,13 @@ let rec string_of_expr = function
 
 let string_of_vdecl v = string_of_typ v.vtyp ^ " " ^ v.vname ^ ";\n"
 
+<<<<<<< HEAD
 let string_of_array_decl array_decl = string_of_typ array_decl.atyp ^ " " ^ 
   array_decl.aname ^ "[" ^ string_of_expr array_decl.asize ^ "]"    
+=======
+let string_of_array_decl array_decl = "array " ^ string_of_typ array_decl.atyp ^ " " ^ 
+	array_decl.aname ^ "[" ^ string_of_expr array_decl.asize ^ "]"		
+>>>>>>> 8e66808c7dde08037874940242eb681edb08b782
 
 let string_of_arraylist list = "[" ^ String.concat ", " (List.map string_of_expr list) ^ "]"
 
@@ -152,11 +165,19 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+<<<<<<< HEAD
   | Array_Decl(aname) -> string_of_array_decl aname ^ ";\n"   
   | Array_Init(aname, list) -> string_of_array_decl aname ^ " = " ^ string_of_arraylist list ^ ";\n"
   | V_Decl(v) -> string_of_vdecl v ^ ";"
   | V_Decl(typ, id, e) -> string_of_typ typ ^ id ^ "=" ^ expr e ^ ";"
   
+=======
+  | Array_Decl(aname) -> string_of_array_decl aname ^ ";\n"		
+  | Array_Init(aname, list) -> string_of_array_decl aname ^ " = " ^ string_of_arraylist list ^ ";\n"
+  | V_Decl(v) -> string_of_vdecl v ^ ";\n"
+  | V_Assign(v, e) -> string_of_vdecl v ^ " = " ^ string_of_expr e ^ ";\n"
+
+>>>>>>> 8e66808c7dde08037874940242eb681edb08b782
 let string_of_fdecl fdecl =
   string_of_typ fdecl.ftyp ^ " " ^ fdecl.fname ^ "(" ^ 
   String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")\n{\n" ^
