@@ -118,7 +118,7 @@ let string_of_arraylist list = "[" ^ String.concat ", " (List.map string_of_expr
 let string_of_field = function
   Field(t, id)-> string_of_typ t ^ " " ^ id ^ ";\n"
 
-let string_of_struct_decl struct_decl = "struct " ^ struct_decl.sname ^ " = { " ^ List.map string_of_field list ^ " }"
+let string_of_struct_decl struct_decl = "struct " ^ struct_decl.sname ^ " = { " ^ String.concat "" (List.map string_of_field list) ^ " }"
 
 let string_of_struct_list list = "{ " ^ String.concat "" (List.map string_of_field list) ^ " }"
 
