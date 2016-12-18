@@ -1,0 +1,4 @@
+struct studentStruct = {
+	string name;
+	int age;
+}

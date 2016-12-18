@@ -1,93 +1,154 @@
-open Ast
+(* MATHLANG Abstract Syntax Tree and functions for printing it *)
+
+type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | And | Or | Dot
+
+type uop = Neg | Not
+
+type typ = Int | Bool | Void | Float | String | Array | Struct
+
+type var_decl = {
+  vtyp  : typ;
+  vname : string;
+}
+
+type field = Field of typ * string
+
+type expr =
+    IntLiteral of int
+  | FloatLiteral of float
+  | StringLiteral of string
+  | BoolLit of bool
+  | Id of string
+  | Binop of expr * op * expr
+  | Unop of uop * expr
+  | Assign of string * expr
+  | Call of string * expr list
+  | Array_Assign of string * expr * expr
+  | Array_Access of string * expr
+  | Struct_Assign of string * expr * expr
+  | Struct_Access of string * expr
+  | Noexpr
+
+type array_decl = {
+  atyp  : typ;
+  aname : string;
+  asize : expr;
+}
+
+type struct_decl = {
+  sname : string;
+  fields : field list;
+}
+
+type stmt =
+    Block of stmt list
+  | Expr of expr
+  | Return of expr
+  | If of expr * stmt * stmt
+  | For of expr * expr * expr * stmt
+  | While of expr * stmt
+  | Array_Decl of array_decl
+  | Array_Init of array_decl * expr list
+  | Struct_Decl of struct_decl 
+  | Struct_Init of struct_decl * field list
+  | V_Decl of var_decl
+  | V_Assign of var_decl * expr
+
+type func_decl = {
+    fname : string;
+    formals : var_decl list;
+    ftyp : typ;
+    body : stmt list;
+  }
+
+type program = func_decl list * stmt list
 
 let string_of_op = function
-  | Add     -> "Add"
-  | Sub     -> "Sub"
-  | Mult    -> "Mult"
-  | Div     -> "Div"
-  | Mod     -> "Mod"
-  | Equal   -> "Equal"
-  | Neq     -> "Neq"
-  | Less    -> "Less"
-  | Leq     -> "Leq"
-  | Greater -> "Greater"
-  | Geq     -> "Geq"
-  | And     -> "And"
-  | Or      -> "Or"
+    Add -> "+"
+  | Sub -> "-"
+  | Mult -> "*"
+  | Div -> "/"
+  | Equal -> "=="
+  | Neq -> "!="
+  | Less -> "<"
+  | Leq -> "<="
+  | Greater -> ">"
+  | Geq -> ">="
+  | And -> "and"
+  | Or -> "or"
+  | Dot -> "."
 
 let string_of_uop = function
-  | Neg -> "Neg"
-  | Not -> "Not"
+    Neg -> "-"
+  | Not -> "not"
 
 let string_of_typ = function
-  | Int     -> "int"
-  | Float   -> "float"
-  | Bool    -> "bool"
-  | Void    -> "void"
-  | Stock   -> "stock"
-  | Order   -> "order"
-  | Portfolio -> "portfolio"
-  | String  -> "string"
-  | Array   -> "array"
-  | Struct  -> "struct"
+    Int -> "int"
+  | Float -> "float"
+  | Bool -> "bool"
+  | Void -> "void"
+  | String -> "string"
+  | Array -> "array"
+  | Struct -> "struct"
 
 let rec string_of_expr = function
-  | IntLiteral(i)       -> "IntLiteral(" ^ string_of_int i ^ ")"
-  | FloatLiteral(f)     -> "FloatLiteral(" ^ string_of_float f ^ ")"
-  | StringLiteral(s)    -> "StringLiteral(" ^ s ^ ")"
-  | BoolLiteral(b)      -> "BoolLiteral(" ^ string_of_bool b ^ ")"
-  | Id(s)               -> "Id(" ^ s ^ ")"
-  | Binop(e1, op, e2)   ->
-      let v1 = string_of_expr e1
-      and v2 = string_of_expr e2
-      and oper = string_of_op op in
-      "Binop(" ^ v1 ^ ", " ^ oper ^ ", " ^ v2 ^ ")"
-  | Unop(uop, e)        -> "Unop(" ^ string_of_uop uop ^ ", " ^
-                            string_of_expr e ^ ")"
-  | Assign(s, e)        -> "Assign(" ^ s ^ ", " ^ string_of_expr e ^ ")"
-  | Call(s, el)         -> "Call(" ^ s ^ ", " ^
-                           String.concat ", " (List.map string_of_expr el) ^
-                           ")"
-  | ObjAccess(e1, e2)   -> "ObjAccess(" ^
-                           string_of_expr e1 ^ ", " ^
-                           string_of_expr e2 ^ ")"
-  | Noexpr              -> "Noexpr"
+    StringLiteral(str) -> str
+  | FloatLiteral(f) -> "FloatLiteral("^ string_of_float f ^")"
+  | IntLiteral(i) -> "IntLiteral(" ^ string_of_int i ^ ")"
+  | BoolLit(true) -> "true"
+  | BoolLit(false) -> "false"
+  | Id(s) -> s
+  | Binop(e1, o, e2) ->
+      string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
+  | Unop(o, e) -> string_of_uop o ^ string_of_expr e
+  | Assign(v, e) -> v ^ " = " ^ string_of_expr e
+  | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | Array_Access(id, index) -> id ^ "[" ^ string_of_expr index ^ "]"  
+  | Array_Assign(id, index, e) -> id ^ "[" ^ string_of_expr index ^"] = " ^ string_of_expr e
+  | Struct_Assign(id, index_name, e) -> id ^ "." ^ string_of_expr index_name ^ "=" ^ string_of_expr e
+  | Struct_Access(id, index_name) -> id ^ "." ^ string_of_expr index_name
+  | Noexpr -> ""
+
+let string_of_vdecl v = string_of_typ v.vtyp ^ " " ^ v.vname ^ ";\n"
+
+let string_of_array_decl array_decl = "array " ^ string_of_typ array_decl.atyp ^ " " ^
+        array_decl.aname ^ "[" ^ string_of_expr array_decl.asize ^ "]"
+
+let string_of_arraylist list = "[" ^ String.concat ", " (List.map string_of_expr list) ^ "]"
+
+let string_of_field = fcunction Field(t,id) -> (string_of_typ t) ^ " " ^ id ^ ";\n"
+
+let string_of_struct_decl struct_decl = "struct " ^ struct_decl.sname ^ " = { " ^ String.concat "" (List.map string_of_field struct_decl.fields) ^ " }"
+
+let string_of_struct_list list = "{ " ^ String.concat "" (List.map string_of_field list) ^ " }"
 
 let rec string_of_stmt = function
-  | Block(sl)       ->  "Block(" ^
-                        String.concat ", " (List.map string_of_stmt sl) ^ ")"
-  | Expr(e)         ->  string_of_expr e
-  | Return(e)       ->  "Return(" ^ string_of_expr e ^ ")"
-  | If(e, s1, s2)   ->  "If(" ^ string_of_expr e ^ ") { " ^ string_of_stmt s1 ^
-                        " } Else { " ^ string_of_stmt s2 ^ " }"
-  | For(e1, e2, e3, s)  ->  "For(" ^
-                            string_of_expr e1 ^ "; " ^
-                            string_of_expr e2 ^ "; " ^
-                            string_of_expr e3 ^ ") { " ^
-                            string_of_stmt s ^ " }"
-  | While(e, s)     ->  "While(" ^ string_of_expr e ^ ") { " ^
-                        string_of_stmt s ^ " }"
+    Block(stmts) ->
+      "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
+  | Expr(expr) -> string_of_expr expr ^ ";\n";
+  | Return(expr) -> "return " ^ string_of_expr expr ^ ";\n";
+  | If(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
+  | If(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
+      string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
+  | For(e1, e2, e3, s) ->
+      "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
+      string_of_expr e3  ^ ") " ^ string_of_stmt s
+  | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+  | Array_Decl(aname) -> string_of_array_decl aname ^ ";\n"
+  | Array_Init(aname, list) -> string_of_array_decl aname ^ " = " ^ string_of_arraylist list ^ ";\n"
+  | Struct_Decl(struct_name) -> string_of_struct_decl struct_name ^ ";\n"
+  | Struct_Init(struct_name, list) -> string_of_struct_decl struct_name ^ " = " ^ string_of_struct_list list ^ ";\n"
+  | V_Decl(v) -> string_of_vdecl v ^ ";\n"
+  | V_Assign(v, e) -> string_of_vdecl v ^ " = " ^ string_of_expr e ^ ";\n"
+ 
 
-let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
+let string_of_fdecl fdecl =
+  fdecl.fname ^ 
+  "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")" ^ 
+  string_of_typ fdecl.ftyp ^ "\n{\n" ^
+  String.concat "" (List.map string_of_stmt fdecl.body) ^
+  "}\n"
 
-let rec string_of_func func =
-  "FUNCTION " ^ func.fname ^ " (" ^
-  String.concat ", " (List.map snd func.formals) ^ ") " ^
-  "returns " ^ string_of_typ func.typ ^ "\n{\n\t" ^
-  String.concat "\n\t" (List.map string_of_stmt func.body) ^
-  "\n}\n"
-
-let rec string_of_program stor = function
-  | ([], [])         -> String.concat "\n" (List.rev stor)
-  | ([], stmt :: tl) -> string_of_program (string_of_stmt stmt :: stor) ([], tl)
-  | (func :: tl, []) -> string_of_program (string_of_func func :: stor) (tl, [])
-
-    (* print all functions first, then statements *)
-  | (func :: ftl, stmts) ->
-        string_of_program (string_of_func func :: stor) (ftl, stmts)
-
-let _ =
-  let lexbuf = Lexing.from_channel stdin in
-  let ast = Parser.program Scanner.token lexbuf in
-  let result = string_of_program [] ast in
-  print_endline result
+let string_of_program (stmts, funcs) =
+  String.concat "" (List.map string_of_stmt stmts) ^ "\n" ^
+  String.concat "\n" (List.map string_of_fdecl funcs)
