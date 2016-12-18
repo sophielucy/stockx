@@ -120,7 +120,7 @@ let string_of_field = function
 
 let string_of_struct_decl struct_decl = "struct " ^ struct_decl.sname ^ " = { " ^ List.map string_of_field list ^ " }"
 
-let string_of_struct_list list = "{" ^ String.concat "" (List.map string_of_field list) ^ "}"
+let string_of_struct_list list = "{ " ^ String.concat "" (List.map string_of_field list) ^ " }"
 
 let rec string_of_stmt = function
     Block(stmts) ->
