@@ -1,0 +1,5 @@
+array int values[5] = [5,6,7,8,9];
+
+array string companies[3] = ["GOOG", 12334, "YHOO"];
+
+values[0] = 1;

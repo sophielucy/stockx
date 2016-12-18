@@ -1,0 +1,3 @@
+array float prices[10];
+array int values[3];
+array string companies[2];
