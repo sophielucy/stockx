@@ -11,6 +11,8 @@ type var_decl = {
   vname : string;
 }
 
+type field = Field of typ * string
+
 type expr =
     IntLiteral of int
   | FloatLiteral of float
@@ -35,6 +37,7 @@ type array_decl = {
 
 type struct_decl = {
   sname : string;
+  fields : field list;
 }
 
 type stmt =
@@ -47,7 +50,7 @@ type stmt =
   | Array_Decl of array_decl
   | Array_Init of array_decl * expr list
   | Struct_Decl of struct_decl 
-  | Struct_Init of struct_decl * stmt list
+  | Struct_Init of struct_decl * field list
   | V_Decl of var_decl
   | V_Assign of var_decl * expr
 
@@ -99,8 +102,8 @@ let rec string_of_expr = function
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
-  | Array_Assign(id, index, e) -> id ^ "[" ^ string_of_expr index ^"] = " ^ string_of_expr e
   | Array_Access(id, index) -> id ^ "[" ^ string_of_expr index ^ "]"  
+  | Array_Assign(id, index, e) -> id ^ "[" ^ string_of_expr index ^"] = " ^ string_of_expr e
   | Struct_Assign(id, index_name, e) -> id ^ "." ^ string_of_expr index_name ^ "=" ^ string_of_expr e
   | Struct_Access(id, index_name) -> id ^ "." ^ string_of_expr index_name
   | Noexpr -> ""
@@ -112,8 +115,12 @@ let string_of_array_decl array_decl = "array " ^ string_of_typ array_decl.atyp ^
 
 let string_of_arraylist list = "[" ^ String.concat ", " (List.map string_of_expr list) ^ "]"
 
-let string_of_struct_decl struct_decl = "struct " ^ struct_decl.sname ^ " = {}"
+let string_of_field = function
+  Field(t, id)-> string_of_typ t ^ " " ^ id ^ ";\n"
 
+let string_of_struct_decl struct_decl = "struct " ^ struct_decl.sname ^ " = { " ^ List.map string_of_field list ^ " }"
+
+let string_of_struct_list list = "{" ^ String.concat "" (List.map string_of_field list) ^ "}"
 
 let rec string_of_stmt = function
     Block(stmts) ->
@@ -134,7 +141,6 @@ let rec string_of_stmt = function
   | V_Decl(v) -> string_of_vdecl v ^ ";\n"
   | V_Assign(v, e) -> string_of_vdecl v ^ " = " ^ string_of_expr e ^ ";\n"
  
-let string_of_struct_list list = "{" ^ String.concat ", " (List.map string_of_stmt list) ^ "}"
 
 let string_of_fdecl fdecl =
   fdecl.fname ^ 

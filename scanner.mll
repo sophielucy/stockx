@@ -1,6 +1,9 @@
 (* Ocamllex scanner for MATHLANG *)
 
-{ open Parser }
+{ 
+  open Parser 
+  let lineno = ref 1
+}
 
 let whitespace = [' ' '\t' '\r' '\n']
 let alpha = ['a'-'z' 'A'-'Z']
@@ -8,7 +11,6 @@ let ascii = ([' '-'!' '#'-'[' ']'-'~'])
 let digit = ['0'-'9']
 let int = digit+
 let float = (digit*) ['.'] digit+
-let char = ''' ( ascii | digit ) '''
 let string = '"' ((ascii)* as s) '"'
 let id = alpha (alpha | digit | '_')*
 
@@ -31,10 +33,6 @@ rule token = parse
 | '-'       { MINUS }
 | '*'       { TIMES }
 | '/'       { DIVIDE }
-| "+="      { PLUSEQ }
-| "-="      { MINUSEQ }
-| "*="      { TIMESEQ }
-| "/="      { DIVIDEEQ }
 | '='       { ASSIGN }
 | "=="      { EQ }
 | "!="      { NEQ }
