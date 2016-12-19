@@ -39,7 +39,7 @@ type func_decl = {
     fname : string;
     formals : var_decl list;
     locals : stmt list;
-    body : stmt list;
+    body : func_decl list;
   }
 
 type program = stmt list * func_decl list
