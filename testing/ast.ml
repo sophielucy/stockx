@@ -17,7 +17,7 @@ type expr =
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | Assign of string * expr
+  | Assign of bind * expr
   | Call of string * expr list
   | Noexpr
 
@@ -28,7 +28,6 @@ type stmt =
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
   | While of expr * stmt
-  | Local of bind * expr
 
 type func_decl = {
     ftyp : typ;
@@ -77,7 +76,7 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Assign(id, e) -> id ^ " = " ^ string_of_expr e
+  | Assign(t, id, e) -> string_of_typ t ^ id ^ "=" ^ string_of_expr e 
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
@@ -94,8 +93,7 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
-  | Local(t,id,e) -> string_of_typ t ^ id ^ "=" ^ string_of_expr e ^ ";\n"
-  
+
 let string_of_fdecl fdecl =
   fdecl.fname ^ 
   "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")" ^ 
