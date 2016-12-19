@@ -1,5 +1,8 @@
 (* Code Generator for MATHLang
  *)
+%{
+open Llvm
+%}
 
 module L = Llvm
 module A = Ast
