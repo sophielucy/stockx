@@ -36,7 +36,7 @@ open Ast
 %%
 
 program:
-  fdecls stmts EOF { $1, $2 }
+  fdecl stmts EOF { $1, $2 }
 
 fdecls:
     /* nothing */       { [] }
@@ -54,7 +54,7 @@ stmts:
 stmt_list:
     stmt                { [$1] }
   | stmt_list stmt      { $2 :: $1 }
-  
+
 fdecl:
     FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE stmt_list RBRACE
     { {

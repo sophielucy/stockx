@@ -41,7 +41,7 @@ type func_decl = {
     body : stmt list;
   }
 
-type program = stmt list * func_decl list
+type program = func_decl * stmt list
 
 (* Pretty-printing functions *)
 
@@ -109,6 +109,6 @@ let string_of_fdecl fdecl =
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
-let string_of_program (vars, funcs) =
-  String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
-  String.concat "\n" (List.map string_of_fdecl funcs)
+let string_of_program (func, statements) =
+  string_of_fdecl func ^ "\n" ^
+  String.concat "\n" (List.map string_of_stmt statements)
