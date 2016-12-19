@@ -1,0 +1,5 @@
+"Resource: /home/plt4115/stockx/testing/mathlang.ml": "\165\211r\234\243\145\224\141\027m\183\142o\173Y%"
+"Resource: /home/plt4115/stockx/testing/ast.ml": "\233\214\162\203\171\005\255\217\200&M\151\234\138\214C"
+"Rule: ocaml dependencies ml (%=ast )": "{\201\015\135\245\254y+4\183&?\019k\132\014"
+"Resource: /home/plt4115/stockx/testing/codegen.ml": "\232\016!uQ\253|-'\191c\220\181M$\144"
+"Rule: ocaml dependencies ml (%=mathlang )": "\024\151\230-\217\194[^\247\1791\2055\145\238\242"

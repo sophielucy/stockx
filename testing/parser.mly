@@ -53,7 +53,7 @@ var_decl:
 
 var_decl_list:
                         {[]}
-  var_decl_list var_decl{$2 :: $1}
+ | var_decl_list var_decl{$2 :: $1}
 
 fdecl:
     FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE var_decl_list stmt_list RBRACE
