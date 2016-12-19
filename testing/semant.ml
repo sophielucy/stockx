@@ -48,9 +48,9 @@ let check (globals, functions) =
 
   (* Function declaration for a named function *)
   let built_in_decls =  StringMap.add "print"
-     { ftyp = Void; fname = "print"; formals = [(Int, "x")];
+     { ftyp = Void; fname = "print"; formals = [(Int; "x")];
        body = [] } (StringMap.singleton "printb"
-     { ftyp = Void; fname = "printb"; formals = [(Bool, "x")];
+     { ftyp = Void; fname = "printb"; formals = [(Bool; "x")];
        body = [] })
    in
      
