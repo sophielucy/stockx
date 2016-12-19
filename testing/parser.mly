@@ -32,15 +32,13 @@ open Ast
 %%
 
 program:
-  fdecls stmts EOF { $1, $2 }
+  decls EOF { $1 }
 
-fdecls:
-    /* nothing */       { [] }
-  | fdecl_list          { List.rev $1 }
+decls:
+                        {[],[]}
+  | decls var_decl      {($2 :: fst $1), snd $1}
+  | decls fdecl         {fst $1, ($2 :: snd $1)}
 
-fdecl_list:
-    fdecl               { [$1] }
-  | fdecl_list fdecl    { $2 :: $1 }
 
 stmts:
     /* nothing */       { [] }
@@ -49,6 +47,13 @@ stmts:
 stmt_list:
     stmt                { [$1] }
   | stmt_list stmt      { $2 :: $1 }
+
+var_decl:
+  typ ID SEMI           { ($1, $2) }
+
+var_decl_list:
+                        {[]}
+  var_decl_list var_decl{$2 :: $1}
 
 fdecl:
     FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE var_decl_list stmt_list RBRACE
@@ -66,8 +71,8 @@ formals_opt:
   | formal_list   { List.rev $1 }
 
 formal_list:
-    var_decl                   { [($1)] }
-  | formal_list COMMA var_decl { ($3) :: $1 }
+    typ ID                     { [($1, $2)] }
+  | formal_list COMMA typ ID { ($3, $4) :: $1 }
 
 typ:
     INT { Int }
@@ -75,17 +80,6 @@ typ:
   | BOOL { Bool }
   | VOID { Void }
   | STRING { String }
-
-var_decl_list:
-  /* nothing*/  { [] }
-  | var_decl_list { $2::$1 }
-
-var_decl:
-  typ ID
-  {{
-    vtyp  = $1;
-    vname = $2;
-  }}
 
 stmt:
     expr SEMI { Expr $1 }
@@ -97,8 +91,6 @@ stmt:
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
      { For($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
-  | var_decl SEMI { V_Decl($1) }
-  | var_decl ASSIGN expr SEMI { V_Assign($1,$3) }
 
 expr_opt:
     /* nothing */ { Noexpr }
@@ -125,7 +117,7 @@ expr:
   | expr OR     expr { Binop($1, Or,    $3) }
   | MINUS expr %prec NEG { Unop(Neg, $2) }
   | NOT expr         { Unop(Not, $2) }
-  | ID ASSIGN expr   { Assign($1, $3) }
+  | typ ID ASSIGN expr   { Assign($1, $2, $4) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
 

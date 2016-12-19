@@ -7,10 +7,7 @@ type uop = Neg | Not
  
 type typ = Int | Bool | Void | Float | String
 
-type var_decl = {
-  vtyp  : typ;
-  vname : string;
-}
+type bind = typ * string
 
 type expr =
     Literal of int
@@ -31,14 +28,13 @@ type stmt =
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
   | While of expr * stmt
-  | V_Decl of var_decl
-  | V_Assign of var_decl * expr
+  | Local of bind * expr
 
 type func_decl = {
     ftyp : typ;
     fname : string;
-    formals : var_decl list;
-    locals: var_decl list;
+    formals : bind list;
+    locals: bind list;
     body : stmt list;
   }
 
@@ -81,12 +77,10 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Assign(v, e) -> v ^ " = " ^ string_of_expr e
+  | Assign(id, e) -> id ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
-
-let string_of_vdecl v = string_of_typ v.vtyp ^ " " ^ v.vname ^ ";\n"
 
 let rec string_of_stmt = function
     Block(stmts) ->
@@ -100,9 +94,8 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
-  | V_Decl(v) -> string_of_vdecl v ^ ";\n"
-  | V_Assign(v, e) -> string_of_vdecl v ^ " = " ^ string_of_expr e ^ ";\n"
-
+  | Local(t,id,e) -> string_of_typ t ^ id ^ "=" ^ string_of_expr e ^ ";\n"
+  
 let string_of_fdecl fdecl =
   fdecl.fname ^ 
   "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")" ^ 

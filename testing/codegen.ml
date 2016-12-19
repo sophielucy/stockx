@@ -22,11 +22,6 @@ let translate (func_decls, stmts) =
     | A.Void -> void_t
     | _ -> i32_t in
 
-  let global_vars =
-    let global_var m (t, n) =
-      let init = L.const_int (ltype_of_typ t) 0
-      in StringMap.add n (L.define_global n init the_module) m in
-    List.fold_left global_var StringMap.empty stmts in
 
   (* Declare printf(), which the print built-in function will call *)
   let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
@@ -48,7 +43,7 @@ let translate (func_decls, stmts) =
     ignore (L.build_store p local builder);
     StringMap.add n local m in
 
-        let add_local m (t, n) =
+    let add_local m (t, n) =
     let local_var = L.build_alloca (ltype_of_typ t) n builder
     in StringMap.add n local_var m in
 
@@ -70,9 +65,8 @@ let translate (func_decls, stmts) =
     (* remember the values of arguments and local variables in the stmts map *)
 (*     List.fold_left add_local StringMap.empty (get_locals [] stmts) in
  *)
- 
-  let lookup n = try StringMap.find n local_vars 
-    with Not_Found -> StringMap.find n global_vars
+
+  let lookup n = StringMap.find n local_vars 
   in
 
   (* Construct code for an expression; return its value *)
@@ -112,17 +106,17 @@ let translate (func_decls, stmts) =
     | A.Call ("print", [e]) -> let func e =
                                  let f = (exprgen builder e) in
                                match e with
-      | A.IntLiteral x -> L.build_call printf_func
-                          [| int_format_str; (exprgen builder e) |]
+    | A.IntLiteral x -> L.build_call printf_func
+                        [| int_format_str; (exprgen builder e) |]
+                        "printf" builder
+    | A.StringLiteral x -> L.build_call printf_func
+                           [| str_format_str; (exprgen builder e) |]
+                           "printf"
+                           builder
+    | A.FloatLiteral x -> L.build_call printf_func
+                          [| float_format_str; (exprgen builder e) |]
                           "printf" builder
-      | A.StringLiteral x -> L.build_call printf_func
-                             [| str_format_str; (exprgen builder e) |]
-                             "printf"
-                             builder
-      | A.FloatLiteral x -> L.build_call printf_func
-                            [| float_format_str; (exprgen builder e) |]
-                            "printf" builder
-      | A.BoolLiteral x -> let boolfunc b = match string_of_bool b with
+    | A.BoolLiteral x -> let boolfunc b = match string_of_bool b with
             | "true" -> L.build_call printf_func
                         [| str_format_str;
                            (L.build_global_stringptr "'true'" "" builder)
@@ -139,31 +133,66 @@ let translate (func_decls, stmts) =
       in func e
     (* or another A.Call *)
     | A.Call (str, el) -> L.build_global_stringptr "Hi" "" builder
-    | A.ObjAccess (e1, e2) -> L.build_global_stringptr "Hi" "" builder
     | A.Noexpr -> L.build_global_stringptr "Hi" "" builder
   in
 
   (* Build the code for the given statement; return the builder for
      the statement's successor *)
-  let rec stmtgen builder = function
-      A.Block sl -> List.fold_left stmtgen builder sl
-    | A.Expr e -> ignore (exprgen builder e); builder
-    | A.Return e -> ignore (exprgen builder e); builder
-    | A.If (e, s1, s2) -> builder
-    | A.For (e1, e2, e3, s) -> builder
-    | A.While (e, s) -> builder
-    | A.Local (t, s) -> builder
+  let rec stmt builder = function
+      A.Block sl -> List.fold_left stmt builder sl
+      | A.Expr e -> ignore (expr builder e); builder
+      | A.Return e -> ignore (match fdecl.A.typ with
+        A.Void -> L.build_ret_void builder
+      | _ -> L.build_ret (expr builder e) builder); builder
+      | A.If (predicate, then_stmt, else_stmt) ->
+        let bool_val = expr builder predicate in
+        let merge_bb = L.append_block context "merge" the_function in
+
+   let then_bb = L.append_block context "then" the_function in
+   add_terminal (stmt (L.builder_at_end context then_bb) then_stmt)
+     (L.build_br merge_bb);
+
+   let else_bb = L.append_block context "else" the_function in
+   add_terminal (stmt (L.builder_at_end context else_bb) else_stmt)
+     (L.build_br merge_bb);
+
+   ignore (L.build_cond_br bool_val then_bb else_bb builder);
+   L.builder_at_end context merge_bb
+
+      | A.While (predicate, body) ->
+    let pred_bb = L.append_block context "while" the_function in
+    ignore (L.build_br pred_bb builder);
+
+    let body_bb = L.append_block context "while_body" the_function in
+    add_terminal (stmt (L.builder_at_end context body_bb) body)
+      (L.build_br pred_bb);
+
+    let pred_builder = L.builder_at_end context pred_bb in
+    let bool_val = expr pred_builder predicate in
+
+    let merge_bb = L.append_block context "merge" the_function in
+    ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
+    L.builder_at_end context merge_bb
+
+      | A.For (e1, e2, e3, body) -> stmt builder
+      ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
+    in
+
+    (* Build the code for each statement in the function *)
+    let builder = stmt builder (A.Block fdecl.A.body) in
+
+    (* Add a return if the last block falls off the end *)
+    add_terminal builder (match fdecl.A.typ with
+        A.Void -> L.build_ret_void
+      | t -> L.build_ret (L.const_int (ltype_of_typ t) 0))
   in
 
   let function_decls =
     let function_decl m fdecl =
       let name = fdecl.A.fname and formal_types =
-        Array.of_list (List.map (fun (t, _) -> ltype_of_typ t) fdecl.A.formals)
-      in
-      let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types
-      in
-      StringMap.add name (L.define_function name ftype the_module, fdecl) m
-    in
+        Array.of_list (List.map (fun (t, _) -> ltype_of_typ t) fdecl.A.formals) in
+      let ftype = L.function_type (ltype_of_typ fdecl.A.ftyp) formal_types in
+      StringMap.add name (L.define_function name ftype the_module, fdecl) m in
     List.fold_left function_decl StringMap.empty func_decls
   in
 
@@ -177,7 +206,7 @@ let translate (func_decls, stmts) =
         | None -> ignore (f builder)
     in
 
-    let builder = stmtgen builder (A.Block fdecl.A.body) in
+    let builder = stmt builder (A.Block fdecl.A.body) in
 
     add_terminal builder (match fdecl.A.typ with
       | A.Void -> L.build_ret_void
@@ -185,6 +214,6 @@ let translate (func_decls, stmts) =
   in
   
   ignore (List.iter build_function_body func_decls);
-  ignore (List.fold_left stmtgen builder stmts);
+  ignore (List.fold_left stmt builder stmts);
   ignore (L.build_ret (L.const_int i32_t 0) builder);
   the_module
