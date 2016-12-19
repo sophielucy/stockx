@@ -92,7 +92,7 @@ stmt:
      { For($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
   | var_decl SEMI { V_Decl($1) }
-  | var_decl ASSIGN expr SEMI { V_Assign($1) }
+  | var_decl ASSIGN expr SEMI { V_Assign($1,$3) }
 
 expr_opt:
     /* nothing */ { Noexpr }
