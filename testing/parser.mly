@@ -82,10 +82,6 @@ var_decl:
     vname = $2;
   }}
 
-var_decl_list:
-    /* nothing */    { [] }
-  | var_decl_list var_decl { $2 :: $1 }
-
 stmt:
     expr SEMI { Expr $1 }
   | RETURN SEMI { Return Noexpr }
