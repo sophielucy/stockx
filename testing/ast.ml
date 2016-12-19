@@ -104,10 +104,9 @@ let rec string_of_stmt = function
   | V_Assign(v, e) -> string_of_vdecl v ^ " = " ^ string_of_expr e ^ ";\n"
 
 let string_of_fdecl fdecl =
-  string_of_typ fdecl.ftyp ^ " " ^
-  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
-  ")\n{\n" ^
-  String.concat "" (List.map string_of_vdecl fdecl.locals) ^
+  fdecl.fname ^ 
+  "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")" ^ 
+  string_of_typ fdecl.ftyp ^ "\n{\n" ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
