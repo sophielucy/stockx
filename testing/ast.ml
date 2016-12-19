@@ -106,5 +106,3 @@ let string_of_fdecl fdecl =
 let string_of_program (vdecls, fdecls) =
   String.concat "" (List.map string_of_vdecl vdecls) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl fdecls)
-Contact GitHub API Training Shop Blog About
-© 2016 GitHub, Inc. Terms Privacy Security Status Help
