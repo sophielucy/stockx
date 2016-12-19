@@ -36,7 +36,7 @@ open Ast
 %%
 
 program:
-  fdecl stmts EOF { $1, $2 }
+  fdecls stmts EOF { $1, $2 }
 
 fdecls:
     /* nothing */       { [] }
@@ -45,7 +45,6 @@ fdecls:
 fdecl_list:
     fdecl               { [$1] }
   | fdecl_list fdecl    { $2 :: $1 }
-
 
 stmts:
     /* nothing */       { [] }

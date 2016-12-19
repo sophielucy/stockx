@@ -41,7 +41,7 @@ type func_decl = {
     body : stmt list;
   }
 
-type program = func_decl * stmt list
+type program = func_decl list * stmt list
 
 (* Pretty-printing functions *)
 
