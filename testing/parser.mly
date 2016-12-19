@@ -51,12 +51,14 @@ stmt_list:
   | stmt_list stmt      { $2 :: $1 }
 
 fdecl:
-    FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE stmt_list RBRACE
+    FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE var_decl_list stmt_list RBRACE
     { {
         fname = $2;
         formals = $4;
         ftyp = $7;
-        body = List.rev $9;
+        locals = List.rev $9;
+        body = List.rev $10;
+      
     } }
 
 formals_opt:
@@ -73,6 +75,10 @@ typ:
   | BOOL { Bool }
   | VOID { Void }
   | STRING { String }
+
+var_decl_list:
+  /* nothing*/  { [] }
+  | var_decl_list { $2::$1 }
 
 var_decl:
   typ ID

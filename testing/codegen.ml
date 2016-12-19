@@ -42,20 +42,35 @@ let translate (func_decls, stmts) =
   let int_format_str   = L.build_global_stringptr "%d\n" "fmt" builder in
   let float_format_str = L.build_global_stringptr "%f\n" "fmt" builder in
 
-    let add_local m (t, n) =
+  let local_vars =
+    let add_formal m (t, n) p = L.set_value_name n p;
+    let local = L.build_alloca (ltype_of_typ t) n builder in
+    ignore (L.build_store p local builder);
+    StringMap.add n local m in
+
+        let add_local m (t, n) =
+    let local_var = L.build_alloca (ltype_of_typ t) n builder
+    in StringMap.add n local_var m in
+
+    let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals
+        (Array.to_list (L.params the_function)) in
+    List.fold_left add_local formals fdecl.A.locals in
+
+   (*  let add_local m (t, n) =
       let local_var = L.build_alloca (ltype_of_typ t) n builder
       in StringMap.add n local_var m
     in
 
     let rec get_locals mylocals = function
-      | [] -> mylocals
-      | [A.Local (t, s)] -> get_locals [(t, s)] []
+        [] -> mylocals
+      | [A.Local (t, s)] -> get_locals [(t, s)]
       | A.Local (t, s) :: r -> get_locals ( (t, s) :: mylocals) r
       | _ :: r -> get_locals mylocals r
-    in
+    in *)
     (* remember the values of arguments and local variables in the stmts map *)
-    List.fold_left add_local StringMap.empty (get_locals [] stmts) in
-
+(*     List.fold_left add_local StringMap.empty (get_locals [] stmts) in
+ *)
+ 
   let lookup n = try StringMap.find n local_vars 
     with Not_Found -> StringMap.find n global_vars
   in

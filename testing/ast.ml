@@ -38,6 +38,7 @@ type func_decl = {
     ftyp : typ;
     fname : string;
     formals : var_decl list;
+    locals: var_decl list;
     body : stmt list;
   }
 
@@ -105,7 +106,7 @@ let rec string_of_stmt = function
 let string_of_fdecl fdecl =
   fdecl.fname ^ 
   "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")" ^ 
-  string_of_typ fdecl.ftyp ^ "\n{\n" ^
+  string_of_typ fdecl.ftyp ^ "\n{\n" ^String.concat "" (List.map string_of_vdecl fdecl.locals)^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
