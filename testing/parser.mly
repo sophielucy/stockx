@@ -1,4 +1,4 @@
-/* Ocamlyacc parser for MicroC */
+/* Ocamlyacc parser for MathLang */
 
 %{
 open Ast
@@ -53,7 +53,7 @@ var_decl:
 
 var_decl_list:
                         {[]}
-  var_decl_list var_decl{$2 :: $1}
+ | var_decl_list var_decl{$2 :: $1}
 
 fdecl:
     FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE var_decl_list stmt_list RBRACE
@@ -117,7 +117,7 @@ expr:
   | expr OR     expr { Binop($1, Or,    $3) }
   | MINUS expr %prec NEG { Unop(Neg, $2) }
   | NOT expr         { Unop(Not, $2) }
-  | typ ID ASSIGN expr   { Assign($1, $2, $4) }
+  | ID ASSIGN expr   { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
 

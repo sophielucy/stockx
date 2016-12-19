@@ -17,7 +17,7 @@ type expr =
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
-  | Assign of bind * expr
+  | Assign of string * expr
   | Call of string * expr list
   | Noexpr
 
@@ -30,14 +30,14 @@ type stmt =
   | While of expr * stmt
 
 type func_decl = {
-    ftyp : typ;
     fname : string;
     formals : bind list;
+    ftyp : typ;
     locals: bind list;
     body : stmt list;
   }
 
-type program = func_decl list * stmt list
+type program =  bind list * func_decl list
 
 (* Pretty-printing functions *)
 
@@ -66,6 +66,8 @@ let string_of_typ = function
   | Void -> "void"
   | String -> "string"
 
+let string_of_vdecl (t,id) = string_of_typ t ^ " " ^ id ^ ";\n"
+
 let rec string_of_expr = function
     Literal(l) -> string_of_int l
   | FloatLit(l) -> string_of_float l
@@ -76,7 +78,7 @@ let rec string_of_expr = function
   | Binop(e1, o, e2) ->
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
-  | Assign(t, id, e) -> string_of_typ t ^ id ^ "=" ^ string_of_expr e 
+  | Assign(id, e) ->  id ^ "=" ^ string_of_expr e 
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
@@ -96,11 +98,13 @@ let rec string_of_stmt = function
 
 let string_of_fdecl fdecl =
   fdecl.fname ^ 
-  "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")" ^ 
+  "(" ^ String.concat ", " (List.map snd fdecl.formals) ^ ")" ^ 
   string_of_typ fdecl.ftyp ^ "\n{\n" ^String.concat "" (List.map string_of_vdecl fdecl.locals)^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
-let string_of_program (func, statements) =
-  string_of_fdecl func ^ "\n" ^
-  String.concat "\n" (List.map string_of_stmt statements)
+let string_of_program (vdecls, fdecls) =
+  String.concat "" (List.map string_of_vdecl vdecls) ^ "\n" ^
+  String.concat "\n" (List.map string_of_fdecl fdecls)
+Contact GitHub API Training Shop Blog About
+© 2016 GitHub, Inc. Terms Privacy Security Status Help
