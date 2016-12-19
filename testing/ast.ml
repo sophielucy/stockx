@@ -85,7 +85,7 @@ let string_of_typ = function
   | Void -> "void"
   | String -> "string"
 
-let string_of_vdecl var_decl = string_of_typ var_decl.typ ^ " " ^ var_decl.vname ^ ";\n"
+let string_of_vdecl(t,id) = string_of_typ t ^ " " id ^ ";\n"
 
 let rec string_of_stmt = function
     Block(stmts) ->
@@ -99,7 +99,7 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
-  | V_Decl(v) -> string_of_vdecl v ^ ";\n"
+  | V_Decl(t,id) -> string_of_vdecl v ^ ";\n"
   | V_Assign(v, e) -> string_of_vdecl v ^ " = " ^ string_of_expr e ^ ";\n"
 
 let string_of_fdecl fdecl =
