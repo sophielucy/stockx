@@ -87,7 +87,7 @@ let string_of_typ = function
   | Void -> "void"
   | String -> "string"
 
-let string_of_vdecl var_decl = string_of_typ var_decl.vtyp ^ " " ^ var_decl.vname ^ ";\n"
+let string_of_vdecl v = string_of_typ v.vtyp ^ " " ^ v.vname ^ ";\n"
 
 let rec string_of_stmt = function
     Block(stmts) ->
