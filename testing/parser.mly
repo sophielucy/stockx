@@ -12,6 +12,7 @@ open Ast
 %token <float> FLOATLIT
 %token <string> STRINGLIT
 %token <string> ID
+%token FUNCTION
 %token EOF
 
 %nonassoc NOELSE
