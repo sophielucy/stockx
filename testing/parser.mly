@@ -50,12 +50,14 @@ stmt_list:
   | stmt_list stmt      { $2 :: $1 }
 
 fdecl:
-   ftyp ID LPAREN formals_opt RPAREN LBRACE stmt_list fdecl_list RBRACE
-     { { ftyp = $1;
-	 fname = $2;
-	 formals = $4;
-	 locals = List.rev $7;
-	 body = List.rev $8 } }
+    FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE stmt_list fdecl_list RBRACE
+    { {
+        fname = $2;
+        formals = $4;
+        typ = $7;
+        locals = List.rev $9;
+        body = List.rev $10;
+    } }
 
 formals_opt:
     /* nothing */ { [] }
