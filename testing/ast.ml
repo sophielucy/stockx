@@ -86,7 +86,7 @@ let rec string_of_expr = function
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
 
-let string_of_vdecl v = string_of_typ v.vtyp ^ " " ^ v.vname ^ ";\n"
+let string_of_vdecl (v: var_decl) = string_of_typ v.vtyp ^ " " ^ v.vname ^ ";\n"
 
 let rec string_of_stmt = function
     Block(stmts) ->
