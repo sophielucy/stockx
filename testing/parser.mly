@@ -35,7 +35,7 @@ program:
   fdecl stmts EOF { $1, $2 }
 
 fdecls:
-    /* nothing */       { [] }
+                        { [] }
   | fdecl_list          { List.rev $1 }
 
 fdecl_list:
@@ -43,7 +43,7 @@ fdecl_list:
   | fdecl_list fdecl    { $2 :: $1 }
 
 stmts:
-    /* nothing */       { [] }
+                        { [] }
   | stmt_list           { List.rev $1 }
 
 stmt_list:
