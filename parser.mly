@@ -46,6 +46,7 @@ fdecl_list:
     fdecl               { [$1] }
   | fdecl_list fdecl    { $2 :: $1 }
 
+
 stmts:
     /* nothing */       { [] }
   | stmt_list           { List.rev $1 }
@@ -53,7 +54,7 @@ stmts:
 stmt_list:
     stmt                { [$1] }
   | stmt_list stmt      { $2 :: $1 }
-
+  
 fdecl:
     FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE stmt_list RBRACE
     { {
