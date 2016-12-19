@@ -32,7 +32,7 @@ open Ast
 %%
 
 program:
-  stmts fdecls EOF { $1, $2 }
+  fdecl stmts EOF { $1, $2 }
 
 fdecls:
     /* nothing */       { [] }
@@ -51,13 +51,12 @@ stmt_list:
   | stmt_list stmt      { $2 :: $1 }
 
 fdecl:
-    FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE stmt_list fdecl_list RBRACE
+    FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE stmt_list RBRACE
     { {
         fname = $2;
         formals = $4;
         ftyp = $7;
-        locals = List.rev $9;
-        body = List.rev $10;
+        body = List.rev $9;
     } }
 
 formals_opt:

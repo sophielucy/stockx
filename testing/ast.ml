@@ -38,8 +38,7 @@ type func_decl = {
     ftyp : typ;
     fname : string;
     formals : var_decl list;
-    locals : stmt list;
-    body : func_decl list;
+    body : stmt list;
   }
 
 type program = stmt list * func_decl list
