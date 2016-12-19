@@ -1,7 +1,7 @@
 (* Code Generator for MATHLang
  *)
 
- module L = Llvm
+module L = Llvm
 module A = Ast
 
 module StringMap = Map.Make(String)
@@ -54,8 +54,7 @@ let translate (func_decls, stmts) =
       | _ :: r -> get_locals mylocals r
     in
     (* remember the values of arguments and local variables in the stmts map *)
-    List.fold_left add_local StringMap.empty (get_locals [] stmts)
-  in
+    List.fold_left add_local StringMap.empty (get_locals [] stmts) in
 
   let lookup n = try StringMap.find n local_vars 
     with Not_Found -> StringMap.find n global_vars

@@ -1,9 +1,10 @@
-(* MATHLANG Abstract Syntax Tree and functions for printing it *)
+(* Abstract Syntax Tree and functions for printing it *)
 
-type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | And | Or 
+type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
+          And | Or
 
 type uop = Neg | Not
-
+ 
 type typ = Int | Bool | Void | Float | String
 
 type var_decl = {
@@ -12,9 +13,8 @@ type var_decl = {
 }
 
 type expr =
-    IntLiteral of int
-  | FloatLiteral of float
-  | StringLiteral of string
+    Literal of int
+  | FloatLit of float
   | BoolLit of bool
   | Id of string
   | Binop of expr * op * expr
@@ -22,12 +22,6 @@ type expr =
   | Assign of string * expr
   | Call of string * expr list
   | Noexpr
-
-type array_decl = {
-  atyp  : typ;
-  aname : string;
-  asize : expr;
-}
 
 type stmt =
     Block of stmt list
@@ -40,13 +34,16 @@ type stmt =
   | V_Assign of var_decl * expr
 
 type func_decl = {
+    ftyp : typ;
     fname : string;
     formals : var_decl list;
-    ftyp : typ;
+    locals : var_decl list;
     body : stmt list;
   }
 
-type program = func_decl list * stmt list
+type program = stmt list * func_decl list
+
+(* Pretty-printing functions *)
 
 let string_of_op = function
     Add -> "+"
@@ -59,24 +56,16 @@ let string_of_op = function
   | Leq -> "<="
   | Greater -> ">"
   | Geq -> ">="
-  | And -> "and"
-  | Or -> "or"
+  | And -> "&&"
+  | Or -> "||"
 
 let string_of_uop = function
     Neg -> "-"
-  | Not -> "not"
-
-let string_of_typ = function
-    Int -> "int"
-  | Float -> "float"
-  | Bool -> "bool"
-  | Void -> "void"
-  | String -> "string"
+  | Not -> "!"
 
 let rec string_of_expr = function
-    StringLiteral(str) -> str
-  | FloatLiteral(f) -> "FloatLiteral("^ string_of_float f ^")"
-  | IntLiteral(i) -> "IntLiteral(" ^ string_of_int i ^ ")"
+    Literal(l) -> string_of_int l
+  | FloatLit(l) -> string_of_float l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | Id(s) -> s
@@ -84,10 +73,9 @@ let rec string_of_expr = function
       string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
   | Unop(o, e) -> string_of_uop o ^ string_of_expr e
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
-  | Call(f, el) -> f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | Call(f, el) ->
+      f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
-
-let string_of_vdecl v = string_of_typ v.vtyp ^ " " ^ v.vname ^ ";\n"
 
 let rec string_of_stmt = function
     Block(stmts) ->
@@ -101,17 +89,24 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
-  | V_Decl(v) -> string_of_vdecl v ^ ";\n"
-  | V_Assign(v, e) -> string_of_vdecl v ^ " = " ^ string_of_expr e ^ ";\n"
- 
+
+let string_of_typ = function
+    Int -> "int"
+  | Float -> "float"
+  | Bool -> "bool"
+  | Void -> "void"
+  | String -> "string"
+
+let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
 let string_of_fdecl fdecl =
-  fdecl.fname ^ 
-  "(" ^ String.concat ", " (List.map string_of_vdecl fdecl.formals) ^ ")" ^ 
-  string_of_typ fdecl.ftyp ^ "\n{\n" ^
+  string_of_typ fdecl.ftyp ^ " " ^
+  fdecl.fname ^ "(" ^ String.concat ", " (List.map snd fdecl.formals) ^
+  ")\n{\n" ^
+  String.concat "" (List.map string_of_vdecl fdecl.locals) ^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
-let string_of_program (stmts, funcs) =
-  String.concat "" (List.map string_of_stmt stmts) ^ "\n" ^
+let string_of_program (vars, funcs) =
+  String.concat "" (List.map string_of_vdecl vars) ^ "\n" ^
   String.concat "\n" (List.map string_of_fdecl funcs)
