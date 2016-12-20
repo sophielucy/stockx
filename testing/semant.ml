@@ -49,10 +49,18 @@ let check (globals, functions) =
   (* Function declaration for a named function *)
   let built_in_decls = StringMap.empty in
 
-  let built_in_decls = StringMap.add "print" { ftyp = Void; fname = "print"; formals = [(Int, "x")]; locals = []; body = [] } built_in_decls in  
-  let built_in_decls = StringMap.add "printb" { ftyp = Void; fname = "printb"; formals = [(Bool, "x")]; locals = []; body = [] } built_in_decls  in
-  let built_in_decls = StringMap.add "printf" { ftyp = Void; fname = "printf"; formals = [(Float, "x")]; locals = []; body = [] } built_in_decls in
-  let built_in_decls = StringMap.add "prints" { ftyp = Void; fname = "prints"; formals = [(String, "x")]; locals = []; body = [] } built_in_decls in
+  let built_in_decls = StringMap.add "print" 
+	{ ftyp = Void; fname = "print"; formals = [(Int, "x")]; 
+	locals = []; body = [] } built_in_decls in  
+  let built_in_decls = StringMap.add "printb" 
+	{ ftyp = Void; fname = "printb"; formals = [(Bool, "x")]; 
+	locals = []; body = [] } built_in_decls  in
+  let built_in_decls = StringMap.add "printf" 
+	{ ftyp = Void; fname = "printf"; formals = [(Float, "x")]; 
+	locals = []; body = [] } built_in_decls in
+  let built_in_decls = StringMap.add "prints" 
+	{ ftyp = Void; fname = "prints"; formals = [(String, "x")]; 
+	locals = []; body = [] } built_in_decls in
      
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
                          built_in_decls functions
@@ -108,6 +116,7 @@ let check (globals, functions) =
       | Unop(op, e) as ex -> let t = expr e in
 	 (match op with
 	   Neg when t = Int -> Int
+         | Neg when t = Float -> Float
 	 | Not when t = Bool -> Bool
          | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
 	  		   string_of_typ t ^ " in " ^ string_of_expr ex)))
