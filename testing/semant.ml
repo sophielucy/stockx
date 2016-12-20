@@ -47,12 +47,12 @@ let check (globals, functions) =
     (List.map (fun fd -> fd.fname) functions);
 
   (* Function declaration for a named function *)
-  let built_in_decls =  StringMap.add "print"
-     { ftyp = Void; fname = "print"; formals = [(Int, "x")];
-       locals = []; body = [] } (StringMap.singleton "printb"
-     { ftyp = Void; fname = "printb"; formals = [(Bool, "x")];
-       locals = []; body = [] })
-   in
+  let built_in_decls = StringMap.empty in
+
+  let built_in_decls = StringMap.add "print" { ftyp = Void; fname = "print"; formals = [(Int, "x")]; locals = []; body = [] } built_in_decls in  
+  let built_in_decls = StringMap.add "printb" { ftyp = Void; fname = "printb"; formals = [(Bool, "x")]; locals = []; body = [] } built_in_decls  in
+  let built_in_decls = StringMap.add "printf" { ftyp = Void; fname = "printf"; formals = [(Float, "x")]; locals = []; body = [] } built_in_decls in
+  let built_in_decls = StringMap.add "prints" { ftyp = Void; fname = "prints"; formals = [(String, "x")]; locals = []; body = [] } built_in_decls in
      
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
                          built_in_decls functions
@@ -92,6 +92,8 @@ let check (globals, functions) =
     let rec expr = function
 	Literal _ -> Int
       | BoolLit _ -> Bool
+      | StringLit _ -> String 
+      | FloatLit _ -> Float
       | Id s -> type_of_identifier s
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
 	(match op with

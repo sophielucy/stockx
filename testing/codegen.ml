@@ -106,33 +106,18 @@ let translate (globals, functions) =
           | A.Not     -> L.build_not) e' "tmp" builder
       | A.Assign (s, e) -> let e' = expr builder e in
 	                   ignore (L.build_store e' (lookup s) builder); e'
-      | A.Call ("print", [e]) -> 
-		 let func e =
-                 let f = (expr builder e) in match e with
-	
-		| A.Literal x -> L.build_call printf_func
-                          [| int_format_str; (expr builder e) |]
-                          "printf" builder
-      		| A.StringLit x -> L.build_call printf_func
-                          [| str_format_str; (expr builder e) |]
-                          "printf" builder
-      		| A.FloatLit x -> L.build_call printf_func
-                          [| float_format_str; (expr builder e) |]
-                          "printf" builder
-      		| A.BoolLit x -> let boolfunc b = match string_of_bool b with
-            		| "true" -> L.build_call printf_func
-                        	[| str_format_str;
-                           	(L.build_global_stringptr "'true'" "" builder)
-                        	|] "printf" builder
-            		| "false" -> L.build_call printf_func
-                         	[| str_format_str;
-                            	(L.build_global_stringptr "'false'" "" builder)
-                         	|] "printf" builder
-            	| _ -> L.build_global_stringptr "---error---" "" builder
-            		in boolfunc x
-      		| _ -> L.build_call printf_func [| int_format_str; f |]
-                          "printf" builder
-      in func e
+     | A.Call ("print", [e])  ->
+	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
+	    "printf" builder
+     | A.Call ("printb", [e]) ->
+	  L.build_call printf_func [| int_format_str ; (expr builder e) |]
+            "printf" builder
+     | A.Call ("printf", [e] ) ->
+	  L.build_call printf_func [| float_format_str ; (expr builder e) |]
+            "printf" builder
+     | A.Call ("prints", [e]) -> 
+           L.build_call printf_func [| str_format_str; (expr builder e) |]
+            "printf" builder	
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
 	 let actuals = List.rev (List.map (expr builder) (List.rev act)) in
