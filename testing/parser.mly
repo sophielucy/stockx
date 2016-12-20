@@ -56,14 +56,13 @@ var_decl_list:
  | var_decl_list var_decl{$2 :: $1}
 
 fdecl:
-    FUNCTION ID LPAREN formals_opt RPAREN RETURNS typ LBRACE var_decl_list stmt_list RBRACE
-    { {
-        fname = $2;
-        formals = $4;
-        ftyp = $7;
-        locals = List.rev $9;
-        body = List.rev $10;
-      
+    typ ID LPAREN formals_opt RPAREN LBRACE var_decl_list stmt_list RBRACE
+     { { 
+	 ftyp = $1;
+	 fname = $2;
+	 formals = $4;
+	 locals = List.rev $7;
+	 body = List.rev $8
     } }
 
 formals_opt:

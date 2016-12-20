@@ -30,9 +30,9 @@ type stmt =
   | While of expr * stmt
 
 type func_decl = {
+    ftyp : typ;
     fname : string;
     formals : bind list;
-    ftyp : typ;
     locals: bind list;
     body : stmt list;
   }
@@ -97,9 +97,10 @@ let rec string_of_stmt = function
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
 
 let string_of_fdecl fdecl =
+  string_of_typ fdecl.ftyp ^" "^
   fdecl.fname ^ 
-  "(" ^ String.concat ", " (List.map snd fdecl.formals) ^ ")" ^ 
-  string_of_typ fdecl.ftyp ^ "\n{\n" ^String.concat "" (List.map string_of_vdecl fdecl.locals)^
+  "(" ^ String.concat ", " (List.map snd fdecl.formals) ^ ")" ^ "\n{\n" ^
+  String.concat "" (List.map string_of_vdecl fdecl.locals)^
   String.concat "" (List.map string_of_stmt fdecl.body) ^
   "}\n"
 
